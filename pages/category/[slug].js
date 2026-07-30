@@ -12,6 +12,12 @@ export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
 }
 
+// จำเป็นต้องมี เพราะหน้านี้เป็น dynamic route ([slug]) ที่ใช้ getStaticProps — ถ้าไม่มี next build จะพังทั้งเว็บ
+// ข้อมูลหมวดหมู่จริงโหลดฝั่ง client จาก search-index.json (useSearchIndex) เลยไม่ต้อง pre-list path ไหนล่วงหน้า
+export async function getStaticPaths() {
+  return { paths: [], fallback: "blocking" };
+}
+
 export default function CategoryPage({ site }) {
   const router = useRouter();
   const { slug } = router.query;
