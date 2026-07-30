@@ -947,3 +947,41 @@ textarea:focus-visible {
   .masthead__brand { font-size: 1.05rem; }
   .meta-grid { grid-template-columns: 1fr 1fr; padding: 12px; }
 }
+
+/* ---------- รีวิว / รายงานปัญหา / ฟอร์มที่เรียก API จริง ---------- */
+.review-form { display: flex; flex-direction: column; gap: 14px; max-width: 480px; margin-top: 16px; }
+.review-form .form-field { margin: 0; }
+
+.star-input { display: flex; gap: 4px; }
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--outline-strong);
+  padding: 2px;
+}
+.star-btn--filled { color: var(--ink); }
+
+.report-toggle-row { margin: 14px 0 0; font-size: 0.9rem; color: var(--ink-soft); }
+
+/* dev-row ถูกออกแบบไว้ให้ใช้ซ้ำกับหน้า admin ใหม่ทุกหน้า (สมาชิก/รีวิว/รายงาน/คำขอ developer)
+   .dev-row__text คือ class ใหม่สำหรับ comment/message/portfolio ที่ไม่ใช่ name/meta (กัน margin ชนของเดิม) */
+.dev-row__text { margin: 6px 0 0; font-size: 0.88rem; }
+.dev-row__actions select {
+  padding: 8px 10px;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  background: var(--surface);
+}
+
+/* ---------- หน้าบัญชีของฉัน (pages/account) ---------- */
+.account-head { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; }
+.account-name { margin: 0; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+.account-role { margin: 4px 0 0; color: var(--ink-soft); font-size: 0.82rem; }
+
+@media (max-width: 560px) {
+  .account-head { flex-direction: column; text-align: center; }
+}
