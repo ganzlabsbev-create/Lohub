@@ -1,0 +1,417 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-29T09:30:11.146Z",
+  "apps": [
+    {
+      "schema_version": "1.0",
+      "id": "app_0001",
+      "name": "Pixel Quest",
+      "slug": "pixel-quest",
+      "developer_id": "dev_0001",
+      "category_ids": [
+        "cat_001"
+      ],
+      "description_short": "เกมผจญภัยพิกเซล 2D สั้นๆ เล่นได้ทุกวัย",
+      "description_full": "Pixel Quest คือเกมแอคชั่นผจญภัยแนวพิกเซลอาร์ต ควบคุมง่าย มีด่านให้เล่นกว่า 30 ด่าน ไม่มีการซื้อในแอปและไม่มีโฆษณา เหมาะกับการเล่นเวลาว่าง",
+      "icon": {
+        "type": "local",
+        "path": "/assets/icons/app_0001.png"
+      },
+      "screenshots": [
+        {
+          "id": "1",
+          "order": 1,
+          "url": "/assets/screenshots/app_0001_1.png",
+          "caption": "หน้าด่านแรก"
+        },
+        {
+          "id": "2",
+          "order": 2,
+          "url": "/assets/screenshots/app_0001_2.png",
+          "caption": "บอสด่าน 5"
+        }
+      ],
+      "install_methods": [
+        {
+          "type": "apk",
+          "label": "Download APK",
+          "url": "https://github.com/somchai-jaidee/pixel-quest/releases/download/v1.2.0/pixel-quest-1.2.0.apk",
+          "primary": true
+        },
+        {
+          "type": "github",
+          "label": "GitHub",
+          "url": "https://github.com/somchai-jaidee/pixel-quest",
+          "primary": false
+        }
+      ],
+      "current_version": "1.2.0",
+      "version_history": [
+        {
+          "version": "1.2.0",
+          "apk_url": "https://github.com/somchai-jaidee/pixel-quest/releases/download/v1.2.0/pixel-quest-1.2.0.apk",
+          "sha256": null,
+          "date": "2026-06-20T00:00:00Z",
+          "note": "แก้บั๊กด่าน 12 ค้าง"
+        },
+        {
+          "version": "1.1.0",
+          "apk_url": "https://github.com/somchai-jaidee/pixel-quest/releases/download/v1.1.0/pixel-quest-1.1.0.apk",
+          "sha256": null,
+          "date": "2026-04-10T00:00:00Z",
+          "note": "เพิ่มด่านใหม่ 10 ด่าน"
+        }
+      ],
+      "size_mb": 45.2,
+      "min_os": "Android 8+",
+      "license": "MIT",
+      "features": [
+        "Offline",
+        "Open Source",
+        "No Ads"
+      ],
+      "languages": [
+        "th",
+        "en"
+      ],
+      "verified": true,
+      "status": "published",
+      "download_count": 0,
+      "created_at": "2026-04-01T00:00:00Z",
+      "updated_at": "2026-06-20T00:00:00Z",
+      "developer_name": "สมชาย ใจดี",
+      "category_names": [
+        "เกม"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "id": "app_0002",
+      "name": "TaskFlow",
+      "slug": "taskflow",
+      "developer_id": "dev_0002",
+      "category_ids": [
+        "cat_003"
+      ],
+      "description_short": "แอปจัดการงานแบบ Kanban เบาๆ ใช้งานผ่านเว็บได้ทันที",
+      "description_full": "TaskFlow เป็นเว็บแอปจัดการงานสไตล์ Kanban รองรับหลายบอร์ด ซิงค์ผ่าน GitHub ได้ เหมาะกับทีมเล็กหรือใช้ส่วนตัว ไม่ต้องติดตั้งอะไรเพิ่ม เปิดผ่านเบราว์เซอร์ได้เลย",
+      "icon": {
+        "type": "local",
+        "path": "/assets/icons/app_0002.png"
+      },
+      "screenshots": [
+        {
+          "id": "1",
+          "order": 1,
+          "url": "/assets/screenshots/app_0002_1.png",
+          "caption": "หน้าบอร์ดหลัก"
+        }
+      ],
+      "install_methods": [
+        {
+          "type": "pwa",
+          "label": "Open Web App",
+          "url": "https://taskflow.opensource-th.example.com",
+          "primary": true
+        },
+        {
+          "type": "github",
+          "label": "GitHub",
+          "url": "https://github.com/opensource-th/taskflow",
+          "primary": false
+        }
+      ],
+      "current_version": "2.0.1",
+      "version_history": [
+        {
+          "version": "2.0.1",
+          "apk_url": null,
+          "sha256": null,
+          "date": "2026-07-05T00:00:00Z",
+          "note": "ปรับ UI มือถือ"
+        },
+        {
+          "version": "2.0.0",
+          "apk_url": null,
+          "sha256": null,
+          "date": "2026-05-18T00:00:00Z",
+          "note": "เปิดตัวเวอร์ชัน 2"
+        }
+      ],
+      "size_mb": 0,
+      "min_os": "Any (Web-based)",
+      "license": "Apache-2.0",
+      "features": [
+        "Open Source",
+        "No Ads",
+        "Cross-platform"
+      ],
+      "languages": [
+        "th",
+        "en"
+      ],
+      "verified": false,
+      "status": "published",
+      "download_count": 0,
+      "created_at": "2026-05-18T00:00:00Z",
+      "updated_at": "2026-07-05T00:00:00Z",
+      "developer_name": "OpenSource Thai Dev Group",
+      "category_names": [
+        "โปรดักติวิตี้"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "id": "app_0003",
+      "name": "QuickNote",
+      "slug": "quicknote",
+      "developer_id": "dev_0002",
+      "category_ids": [
+        "cat_002",
+        "cat_003"
+      ],
+      "description_short": "จดโน้ตเร็ว ใช้ได้ทั้งแบบเว็บและติดตั้งเป็นแอป",
+      "description_full": "QuickNote เป็นแอปจดบันทึกที่เน้นความเร็ว เปิดแล้วพิมพ์ได้ทันที รองรับการเปิดผ่านเว็บแบบ PWA หรือดาวน์โหลดเป็น APK เพื่อใช้งานแบบออฟไลน์เต็มรูปแบบ",
+      "icon": {
+        "type": "local",
+        "path": "/assets/icons/app_0003.png"
+      },
+      "screenshots": [
+        {
+          "id": "1",
+          "order": 1,
+          "url": "/assets/screenshots/app_0003_1.png",
+          "caption": "หน้าจดโน้ต"
+        },
+        {
+          "id": "2",
+          "order": 2,
+          "url": "/assets/screenshots/app_0003_2.png",
+          "caption": "รายการโน้ตทั้งหมด"
+        }
+      ],
+      "install_methods": [
+        {
+          "type": "pwa",
+          "label": "Open Web App",
+          "url": "https://quicknote.opensource-th.example.com",
+          "primary": true
+        },
+        {
+          "type": "apk",
+          "label": "Download APK",
+          "url": "https://github.com/opensource-th/quicknote/releases/download/v1.0.3/quicknote-1.0.3.apk",
+          "primary": false
+        }
+      ],
+      "current_version": "1.0.3",
+      "version_history": [
+        {
+          "version": "1.0.3",
+          "apk_url": "https://github.com/opensource-th/quicknote/releases/download/v1.0.3/quicknote-1.0.3.apk",
+          "sha256": null,
+          "date": "2026-07-12T00:00:00Z",
+          "note": "แก้บั๊กบันทึกไฟล์หาย"
+        }
+      ],
+      "size_mb": 8.7,
+      "min_os": "Android 7+",
+      "license": "GPL-3.0",
+      "features": [
+        "Offline",
+        "Open Source",
+        "No Ads"
+      ],
+      "languages": [
+        "th"
+      ],
+      "verified": false,
+      "status": "published",
+      "download_count": 0,
+      "created_at": "2026-07-01T00:00:00Z",
+      "updated_at": "2026-07-12T00:00:00Z",
+      "developer_name": "OpenSource Thai Dev Group",
+      "category_names": [
+        "ยูทิลิตี้",
+        "โปรดักติวิตี้"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "id": "app_0004",
+      "name": "Retro Runner",
+      "slug": "retro-runner",
+      "developer_id": "dev_0001",
+      "category_ids": [
+        "cat_001"
+      ],
+      "description_short": "เกมวิ่งหนีอุปสรรคสไตล์ 8-bit เล่นสนุกไม่กี่นาที",
+      "description_full": "Retro Runner เป็นเกมแนว endless runner สไตล์ 8-bit ควบคุมด้วยการแตะจอเพียงปุ่มเดียว เก็บคะแนนสูงสุดแข่งกับตัวเองหรือเพื่อน มีธีมให้ปลดล็อกหลายแบบ",
+      "icon": {
+        "type": "local",
+        "path": "/assets/icons/app_0004.png"
+      },
+      "screenshots": [
+        {
+          "id": "1",
+          "order": 1,
+          "url": "/assets/screenshots/app_0004_1.png",
+          "caption": "หน้าเล่นเกม"
+        }
+      ],
+      "install_methods": [
+        {
+          "type": "apk",
+          "label": "Download APK",
+          "url": "https://github.com/somchai-jaidee/retro-runner/releases/download/v0.9.0/retro-runner-0.9.0.apk",
+          "primary": true
+        },
+        {
+          "type": "github",
+          "label": "GitHub",
+          "url": "https://github.com/somchai-jaidee/retro-runner",
+          "primary": false
+        }
+      ],
+      "current_version": "0.9.0",
+      "version_history": [
+        {
+          "version": "0.9.0",
+          "apk_url": "https://github.com/somchai-jaidee/retro-runner/releases/download/v0.9.0/retro-runner-0.9.0.apk",
+          "sha256": null,
+          "date": "2026-06-01T00:00:00Z",
+          "note": "เปิดตัวรุ่นทดสอบ (beta)"
+        }
+      ],
+      "size_mb": 22,
+      "min_os": "Android 6+",
+      "license": "Freeware",
+      "features": [
+        "Offline",
+        "No Ads"
+      ],
+      "languages": [
+        "th",
+        "en"
+      ],
+      "verified": false,
+      "status": "published",
+      "download_count": 0,
+      "created_at": "2026-06-01T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z",
+      "developer_name": "สมชาย ใจดี",
+      "category_names": [
+        "เกม"
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "id": "app_0005",
+      "name": "FileSync Lite",
+      "slug": "filesync-lite",
+      "developer_id": "dev_0002",
+      "category_ids": [
+        "cat_002"
+      ],
+      "description_short": "เครื่องมือซิงค์ไฟล์ระหว่างเครื่องผ่าน LAN แบบง่ายๆ",
+      "description_full": "FileSync Lite เป็นเครื่องมือโอเพนซอร์สสำหรับซิงค์ไฟล์ระหว่างอุปกรณ์ในเครือข่ายเดียวกัน ไม่ต้องผ่านเซิร์ฟเวอร์กลาง ปัจจุบันแจกจ่ายเฉพาะซอร์สโค้ดผ่าน GitHub เท่านั้น ยังไม่มี APK สำเร็จรูป",
+      "icon": {
+        "type": "local",
+        "path": "/assets/icons/app_0005.png"
+      },
+      "screenshots": [],
+      "install_methods": [
+        {
+          "type": "github",
+          "label": "GitHub",
+          "url": "https://github.com/opensource-th/filesync-lite",
+          "primary": true
+        }
+      ],
+      "current_version": "0.4.1",
+      "version_history": [
+        {
+          "version": "0.4.1",
+          "apk_url": null,
+          "sha256": null,
+          "date": "2026-07-20T00:00:00Z",
+          "note": "เพิ่มการรองรับ IPv6"
+        }
+      ],
+      "size_mb": 3.1,
+      "min_os": "Android 8+",
+      "license": "MIT",
+      "features": [
+        "Open Source",
+        "No Ads"
+      ],
+      "languages": [
+        "en"
+      ],
+      "verified": false,
+      "status": "published",
+      "download_count": 0,
+      "created_at": "2026-07-20T00:00:00Z",
+      "updated_at": "2026-07-20T00:00:00Z",
+      "developer_name": "OpenSource Thai Dev Group",
+      "category_names": [
+        "ยูทิลิตี้"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "schema_version": "1.0",
+      "id": "cat_001",
+      "name": "เกม",
+      "slug": "games",
+      "icon": "🎮",
+      "color": "#FFD700",
+      "order": 1
+    },
+    {
+      "schema_version": "1.0",
+      "id": "cat_002",
+      "name": "ยูทิลิตี้",
+      "slug": "utilities",
+      "icon": "🛠️",
+      "color": "#4A90D9",
+      "order": 2
+    },
+    {
+      "schema_version": "1.0",
+      "id": "cat_003",
+      "name": "โปรดักติวิตี้",
+      "slug": "productivity",
+      "icon": "📝",
+      "color": "#50C878",
+      "order": 3
+    }
+  ],
+  "developers": [
+    {
+      "schema_version": "1.0",
+      "id": "dev_0001",
+      "name": "สมชาย ใจดี",
+      "github_username": "somchai-jaidee",
+      "website": "https://somchai-dev.example.com",
+      "avatar": "/assets/icons/dev_0001.png",
+      "contact": "somchai@example.com",
+      "verified": true,
+      "status": "active",
+      "joined_at": "2025-01-15T00:00:00Z"
+    },
+    {
+      "schema_version": "1.0",
+      "id": "dev_0002",
+      "name": "OpenSource Thai Dev Group",
+      "github_username": "opensource-th",
+      "website": "https://opensource-th.example.com",
+      "avatar": "/assets/icons/dev_0002.png",
+      "contact": "contact@opensource-th.example.com",
+      "verified": false,
+      "status": "active",
+      "joined_at": "2025-03-02T00:00:00Z"
+    }
+  ]
+}
