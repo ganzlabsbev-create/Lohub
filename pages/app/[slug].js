@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import AppIcon from "../../components/AppIcon";
+import AppCard from "../../components/AppCard";
 import CategoryPill from "../../components/CategoryPill";
 import InstallButtons from "../../components/InstallButtons";
 import ScreenshotGallery from "../../components/ScreenshotGallery";
@@ -90,13 +91,14 @@ export default function AppDetailPage({ site }) {
 
           <InstallButtons methods={app.install_methods} />
 
-          <div className="meta-grid">
-            <div><span>เวอร์ชันล่าสุด</span><strong className="mono">v{app.current_version}</strong></div>
-            <div><span>ขนาดไฟล์</span><strong>{formatSize(app.size_mb)}</strong></div>
-            <div><span>รองรับ</span><strong>{app.min_os || "-"}</strong></div>
-            <div><span>สัญญาอนุญาต</span><strong>{app.license || "-"}</strong></div>
-            <div><span>ภาษา</span><strong>{(app.languages || []).join(", ") || "-"}</strong></div>
-          </div>
+          <ScreenshotGallery screenshots={app.screenshots} />
+
+          <section className="section">
+            <div className="section__head">
+              <h2>เกี่ยวกับแอปนี้</h2>
+            </div>
+            <p className="app-detail__desc">{app.description_full || app.description_short}</p>
+          </section>
 
           {app.features?.length > 0 && (
             <div className="feature-row">
@@ -106,18 +108,42 @@ export default function AppDetailPage({ site }) {
             </div>
           )}
 
-          <section className="section">
-            <div className="section__head">
-              <h2>เกี่ยวกับแอปนี้</h2>
-            </div>
-            <p className="app-detail__desc">{app.description_full || app.description_short}</p>
-          </section>
-
-          <ScreenshotGallery screenshots={app.screenshots} />
+          <div className="meta-grid">
+            <div><span>เวอร์ชันล่าสุด</span><strong className="mono">v{app.current_version}</strong></div>
+            <div><span>ขนาดไฟล์</span><strong>{formatSize(app.size_mb)}</strong></div>
+            <div><span>รองรับ</span><strong>{app.min_os || "-"}</strong></div>
+            <div><span>สัญญาอนุญาต</span><strong>{app.license || "-"}</strong></div>
+            <div><span>ภาษา</span><strong>{(app.languages || []).join(", ") || "-"}</strong></div>
+          </div>
 
           <VersionHistory versions={app.version_history} currentVersion={app.current_version} />
+
+          <RelatedApps app={app} categories={data.categories} allApps={data.apps} />
         </>
       )}
     </Layout>
+  );
+}
+
+// แอปที่เกี่ยวข้อง — คัดจากหมวดหมู่แรกของแอปนี้ (ใช้ข้อมูลที่โหลดมาแล้วทั้งหมด ไม่ fetch เพิ่ม)
+function RelatedApps({ app, categories, allApps }) {
+  const firstCatId = app.category_ids?.[0];
+  if (!firstCatId) return null;
+  const related = allApps
+    .filter((a) => a.id !== app.id && (a.category_ids || []).includes(firstCatId))
+    .slice(0, 4);
+  if (related.length === 0) return null;
+
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h2>แอปที่เกี่ยวข้อง</h2>
+      </div>
+      <div className="app-grid">
+        {related.map((a) => (
+          <AppCard key={a.id} app={a} categories={categories} />
+        ))}
+      </div>
+    </section>
   );
 }
