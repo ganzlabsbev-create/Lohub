@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "id": "app_0004",
+  "name": "Retro Runner",
+  "slug": "retro-runner",
+  "developer_id": "dev_0001",
+  "category_ids": [
+    "cat_001"
+  ],
+  "description_short": "เกมวิ่งหนีอุปสรรคสไตล์ 8-bit เล่นสนุกไม่กี่นาที",
+  "description_full": "Retro Runner เป็นเกมแนว endless runner สไตล์ 8-bit ควบคุมด้วยการแตะจอเพียงปุ่มเดียว เก็บคะแนนสูงสุดแข่งกับตัวเองหรือเพื่อน มีธีมให้ปลดล็อกหลายแบบ",
+  "icon": {
+    "type": "local",
+    "path": "/assets/icons/app_0004.png"
+  },
+  "screenshots": [
+    {
+      "id": "1",
+      "order": 1,
+      "url": "/assets/screenshots/app_0004_1.png",
+      "caption": "หน้าเล่นเกม"
+    }
+  ],
+  "install_methods": [
+    {
+      "type": "apk",
+      "label": "Download APK",
+      "url": "https://github.com/somchai-jaidee/retro-runner/releases/download/v0.9.0/retro-runner-0.9.0.apk",
+      "primary": true
+    },
+    {
+      "type": "github",
+      "label": "GitHub",
+      "url": "https://github.com/somchai-jaidee/retro-runner",
+      "primary": false
+    }
+  ],
+  "current_version": "0.9.0",
+  "version_history": [
+    {
+      "version": "0.9.0",
+      "apk_url": "https://github.com/somchai-jaidee/retro-runner/releases/download/v0.9.0/retro-runner-0.9.0.apk",
+      "sha256": null,
+      "date": "2026-06-01T00:00:00Z",
+      "note": "เปิดตัวรุ่นทดสอบ (beta)"
+    }
+  ],
+  "size_mb": 22,
+  "min_os": "Android 6+",
+  "license": "Freeware",
+  "features": [
+    "Offline",
+    "No Ads"
+  ],
+  "languages": [
+    "th",
+    "en"
+  ],
+  "verified": false,
+  "status": "published",
+  "download_count": 0,
+  "created_at": "2026-06-01T00:00:00Z",
+  "updated_at": "2026-06-01T00:00:00Z"
+}

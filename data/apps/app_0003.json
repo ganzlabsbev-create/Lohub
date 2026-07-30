@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "id": "app_0003",
+  "name": "QuickNote",
+  "slug": "quicknote",
+  "developer_id": "dev_0002",
+  "category_ids": [
+    "cat_002",
+    "cat_003"
+  ],
+  "description_short": "จดโน้ตเร็ว ใช้ได้ทั้งแบบเว็บและติดตั้งเป็นแอป",
+  "description_full": "QuickNote เป็นแอปจดบันทึกที่เน้นความเร็ว เปิดแล้วพิมพ์ได้ทันที รองรับการเปิดผ่านเว็บแบบ PWA หรือดาวน์โหลดเป็น APK เพื่อใช้งานแบบออฟไลน์เต็มรูปแบบ",
+  "icon": {
+    "type": "local",
+    "path": "/assets/icons/app_0003.png"
+  },
+  "screenshots": [
+    {
+      "id": "1",
+      "order": 1,
+      "url": "/assets/screenshots/app_0003_1.png",
+      "caption": "หน้าจดโน้ต"
+    },
+    {
+      "id": "2",
+      "order": 2,
+      "url": "/assets/screenshots/app_0003_2.png",
+      "caption": "รายการโน้ตทั้งหมด"
+    }
+  ],
+  "install_methods": [
+    {
+      "type": "pwa",
+      "label": "Open Web App",
+      "url": "https://quicknote.opensource-th.example.com",
+      "primary": true
+    },
+    {
+      "type": "apk",
+      "label": "Download APK",
+      "url": "https://github.com/opensource-th/quicknote/releases/download/v1.0.3/quicknote-1.0.3.apk",
+      "primary": false
+    }
+  ],
+  "current_version": "1.0.3",
+  "version_history": [
+    {
+      "version": "1.0.3",
+      "apk_url": "https://github.com/opensource-th/quicknote/releases/download/v1.0.3/quicknote-1.0.3.apk",
+      "sha256": null,
+      "date": "2026-07-12T00:00:00Z",
+      "note": "แก้บั๊กบันทึกไฟล์หาย"
+    }
+  ],
+  "size_mb": 8.7,
+  "min_os": "Android 7+",
+  "license": "GPL-3.0",
+  "features": [
+    "Offline",
+    "Open Source",
+    "No Ads"
+  ],
+  "languages": [
+    "th"
+  ],
+  "verified": false,
+  "status": "published",
+  "download_count": 0,
+  "created_at": "2026-07-01T00:00:00Z",
+  "updated_at": "2026-07-12T00:00:00Z"
+}
