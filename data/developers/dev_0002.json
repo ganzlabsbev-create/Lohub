@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "id": "dev_0002",
+  "name": "OpenSource Thai Dev Group",
+  "github_username": "opensource-th",
+  "website": "https://opensource-th.example.com",
+  "avatar": "/assets/icons/dev_0002.png",
+  "contact": "contact@opensource-th.example.com",
+  "verified": false,
+  "status": "active",
+  "joined_at": "2025-03-02T00:00:00Z"
+}
