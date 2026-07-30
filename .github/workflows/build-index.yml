@@ -1,0 +1,47 @@
+name: Build search-index.json
+
+# รันอัตโนมัติทุกครั้งที่มีการ push เข้า main และมีการแก้ไฟล์ใน data/
+# (ครอบคลุมทั้งกรณีแก้ไฟล์ตรงผ่านเว็บ GitHub และกรณี merge PR ที่ระบบสร้างให้ตอนอนุมัติ developer)
+# หรือจะสั่งรันเองก็ได้จากแท็บ Actions -> Build search-index.json -> Run workflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+  workflow_dispatch: {}
+
+# ต้องให้สิทธิ์เขียนกลับเข้า repo เพื่อ commit ไฟล์ที่ build ใหม่
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # ต้อง fetch history เต็มไม่งั้น push กลับอาจ error เรื่อง shallow clone
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run builder
+        run: node scripts/builder/build.js
+
+      - name: Commit updated index if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- public/search-index.json data/manifest.json data/apps; then
+            echo "ไม่มีอะไรเปลี่ยน ข้าม commit"
+          else
+            git add public/search-index.json data/manifest.json data/apps
+            git commit -m "chore: rebuild search-index.json [skip ci]"
+            git push
+          fi
+          
