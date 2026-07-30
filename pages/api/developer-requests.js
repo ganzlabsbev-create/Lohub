@@ -16,12 +16,18 @@ export default async function handler(req, res) {
       if (actor.role !== "member") {
         return res.status(400).json({ error: "คุณเป็น developer หรือ admin อยู่แล้ว" });
       }
-      const { reason, portfolio_url } = req.body || {};
+      const { reason, portfolio_url, display_name, website, contact } = req.body || {};
+      // หมายเหตุ: display_name/website/contact เป็นฟิลด์เสริมสำหรับตอนสร้างโปรไฟล์นักพัฒนาอัตโนมัติ
+      // (ดู lib/githubCommit.js) — ถ้า Apps Script backend ยังไม่รองรับคอลัมน์พวกนี้ใน sheet
+      // "developer_requests" ค่าจะถูกส่งไปเฉยๆ ไม่พัง แค่ admin_developer_requests อาจไม่คืนค่ากลับมา
+      // (ตอน approve จะ fallback ไปใช้ข้อมูลโปรไฟล์สาธารณะจาก GitHub แทน)
       const request = await gasPost("submit_developer_request", {
         username: actor.username,
-        display_name: actor.memberRow?.display_name,
+        display_name: display_name || actor.memberRow?.display_name,
         reason,
         portfolio_url,
+        website,
+        contact,
       });
       return res.status(201).json({ request });
     }
