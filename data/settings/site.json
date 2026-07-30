@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "site_name": "Lohub",
-  "tagline": "Community App Hub"
+  "tagline": "Community App Hub",
   "default_language": "th",
   "supported_languages": ["th", "en"],
   "license_options": ["MIT", "GPL-3.0", "Apache-2.0", "Proprietary", "Freeware", "Other"],
