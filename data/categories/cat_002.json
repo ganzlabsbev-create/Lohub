@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "id": "cat_002",
+  "name": "ยูทิลิตี้",
+  "slug": "utilities",
+  "icon": "🛠️",
+  "color": "#4A90D9",
+  "order": 2
+}

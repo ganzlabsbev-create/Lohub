@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "id": "cat_003",
+  "name": "โปรดักติวิตี้",
+  "slug": "productivity",
+  "icon": "📝",
+  "color": "#50C878",
+  "order": 3
+}

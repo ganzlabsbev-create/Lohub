@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "id": "cat_001",
+  "name": "เกม",
+  "slug": "games",
+  "icon": "🎮",
+  "color": "#FFD700",
+  "order": 1
+}
