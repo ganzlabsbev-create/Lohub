@@ -46,6 +46,7 @@ export default function Home({ site }) {
           </section>
 
           <FeaturedSection apps={data.apps} categories={data.categories} />
+          <RecommendedSection apps={data.apps} categories={data.categories} />
           <NewestSection apps={data.apps} categories={data.categories} />
         </>
       )}
@@ -64,6 +65,24 @@ function FeaturedSection({ apps, categories }) {
       </div>
       <div className="app-grid">
         {featured.map((app) => (
+          <AppCard key={app.id} app={app} categories={categories} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RecommendedSection({ apps, categories }) {
+  // ต่อจากแอปแนะนำ (popular) แถวถัดไป — ใช้ sortApps เดิม ไม่มี logic ใหม่
+  const recommended = sortApps(apps, "popular").slice(3, 7);
+  if (recommended.length === 0) return null;
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h2>แนะนำสำหรับคุณ</h2>
+      </div>
+      <div className="app-grid">
+        {recommended.map((app) => (
           <AppCard key={app.id} app={app} categories={categories} />
         ))}
       </div>
