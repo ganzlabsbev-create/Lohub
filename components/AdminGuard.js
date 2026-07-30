@@ -34,4 +34,4 @@ export default function AdminGuard({ site, children }) {
   }
 
   return children;
-}
+} 
