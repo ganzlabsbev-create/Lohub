@@ -6,6 +6,10 @@ const TABS = [
   { key: "queue", href: "/admin/queue", label: "คิวรอตรวจ" },
   { key: "categories", href: "/admin/categories", label: "หมวดหมู่" },
   { key: "developers", href: "/admin/developers", label: "นักพัฒนา" },
+  { key: "members", href: "/admin/members", label: "สมาชิก" },
+  { key: "reviews", href: "/admin/reviews", label: "รีวิว" },
+  { key: "reports", href: "/admin/reports", label: "รายงานปัญหา" },
+  { key: "developer-requests", href: "/admin/developer-requests", label: "คำขอ Developer" },
 ];
 
 export default function AdminNav({ active }) {
