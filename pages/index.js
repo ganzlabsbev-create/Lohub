@@ -1,7 +1,9 @@
+import Link from "next/link";
 import Layout from "../components/Layout";
 import AppCard from "../components/AppCard";
 import CategoryPill from "../components/CategoryPill";
 import StateMessage from "../components/StateMessage";
+import { IconSearch } from "../components/Icons";
 import { useSearchIndex } from "../lib/useSearchIndex";
 import { sortApps } from "../lib/sort";
 import { getSiteSettings } from "../lib/site";
@@ -17,10 +19,11 @@ export default function Home({ site }) {
     <Layout site={site}>
       <section className="hero">
         <h1>ค้นแอปที่ใช่ ติดตั้งได้เลย</h1>
-        <p>
-          รวมแอปจากนักพัฒนาอิสระ ทุกตัวผ่านการตรวจสอบแล้ว เลือกช่องทางติดตั้งได้เอง
-          ไม่ว่าจะเป็น APK, GitHub หรือเปิดผ่านเว็บ
-        </p>
+        <p>รวมแอปจากนักพัฒนาอิสระ ทุกตัวผ่านการตรวจสอบแล้ว</p>
+        <Link href="/search" className="searchbar" aria-label="ค้นหาแอป">
+          <span className="searchbar__icon" aria-hidden="true"><IconSearch size={18} /></span>
+          ค้นหาแอปและนักพัฒนา
+        </Link>
       </section>
 
       {loading && <StateMessage kind="loading">กำลังโหลดรายการแอป...</StateMessage>}
@@ -32,7 +35,7 @@ export default function Home({ site }) {
 
       {data && (
         <>
-          <section className="section">
+          <section className="section" id="categories">
             <div className="section__head">
               <h2>หมวดหมู่</h2>
             </div>
