@@ -10,7 +10,7 @@ export default function AppIcon({ app, accentColor, size = 56 }) {
     return (
       <div
         className="app-icon app-icon--fallback"
-        style={{ width: size, height: size, background: accentColor }}
+        style={{ width: size, height: size }}
         aria-hidden="true"
       >
         {initial}

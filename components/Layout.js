@@ -1,26 +1,43 @@
+import { useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import { useSession, signIn, signOut } from "next-auth/react";
+import SideDrawer from "./SideDrawer";
+import { IconMenu, IconSearch, IconUser } from "./Icons";
 
-// สถานะ login แบบย่อในแถบบน — Part 10
-function AuthStatus() {
+// ปุ่มสถานะ login แบบย่อ (ไอคอนกลม มุมขวาบน) — Part 10
+function AuthButton() {
   const { data: session, status } = useSession();
   if (status === "loading") return null;
   if (!session) {
     return (
-      <button type="button" className="masthead__search masthead__auth" onClick={() => signIn("github")}>
-        👤 เข้าสู่ระบบ
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={() => signIn("github")}
+        aria-label="เข้าสู่ระบบ"
+        title="เข้าสู่ระบบ"
+      >
+        <IconUser size={19} />
       </button>
     );
   }
   return (
-    <button type="button" className="masthead__search masthead__auth" onClick={() => signOut()}>
-      👤 {session.user?.login} · ออกจากระบบ
+    <button
+      type="button"
+      className="icon-btn icon-btn--active"
+      onClick={() => signOut()}
+      aria-label={`${session.user?.login} · ออกจากระบบ`}
+      title={`${session.user?.login} · ออกจากระบบ`}
+    >
+      <IconUser size={19} />
     </button>
   );
 }
 
 export default function Layout({ site, children }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <>
       <Head>
@@ -28,31 +45,32 @@ export default function Layout({ site, children }) {
         <meta name="description" content={site.tagline} />
       </Head>
 
+      <SideDrawer site={site} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
       <header className="masthead">
         <div className="masthead__inner">
           <div className="masthead__row">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="เปิดเมนู"
+            >
+              <IconMenu size={21} />
+            </button>
+
             <Link href="/" className="masthead__brand">
               <span className="masthead__mark">▣</span>
               {site.site_name}
             </Link>
-            <div className="masthead__nav">
-              <Link href="/dev/submit" className="masthead__search">
-                ➕ ส่งแอป
-              </Link>
-              <Link href="/dev/dashboard" className="masthead__search">
-                📋 Dashboard
-              </Link>
-              <Link href="/admin/queue" className="masthead__search">
-                🛠 Admin
-              </Link>
-              <AuthStatus />
-            </div>
+
+            <span className="masthead__spacer" />
+
+            <Link href="/search" className="icon-btn" aria-label="ค้นหา" title="ค้นหา">
+              <IconSearch size={19} />
+            </Link>
+            <AuthButton />
           </div>
-          <p className="masthead__tagline">{site.tagline}</p>
-          <Link href="/search" className="searchbar" aria-label="ค้นหาแอป">
-            <span className="searchbar__icon" aria-hidden="true">🔍</span>
-            ค้นหาแอปและนักพัฒนา
-          </Link>
         </div>
       </header>
 

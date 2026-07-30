@@ -1,7 +1,9 @@
+import { IconDownload, IconCode, IconExternal } from "./Icons";
+
 const METHOD_META = {
-  apk: { label: "ดาวน์โหลด APK", icon: "⬇" },
-  github: { label: "เปิดใน GitHub", icon: "◈" },
-  pwa: { label: "เปิดเว็บแอป", icon: "↗" },
+  apk: { label: "ดาวน์โหลด APK", Icon: IconDownload },
+  github: { label: "เปิดใน GitHub", Icon: IconCode },
+  pwa: { label: "เปิดเว็บแอป", Icon: IconExternal },
 };
 
 export default function InstallButtons({ methods }) {
@@ -12,7 +14,8 @@ export default function InstallButtons({ methods }) {
   return (
     <div className="install-row">
       {sorted.map((m, i) => {
-        const meta = METHOD_META[m.type] || { label: m.label, icon: "→" };
+        const meta = METHOD_META[m.type] || { label: m.label, Icon: IconExternal };
+        const Icon = meta.Icon;
         return (
           <a
             key={`${m.type}-${i}`}
@@ -21,7 +24,7 @@ export default function InstallButtons({ methods }) {
             rel="noopener noreferrer"
             className={`install-btn${m.primary ? " install-btn--primary" : ""}`}
           >
-            <span aria-hidden="true">{meta.icon}</span>
+            <Icon size={16} />
             {m.label || meta.label}
           </a>
         );

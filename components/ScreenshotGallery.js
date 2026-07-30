@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconImage } from "./Icons";
 
 function Shot({ shot }) {
   const [broken, setBroken] = useState(false);
@@ -6,7 +7,7 @@ function Shot({ shot }) {
   if (broken) {
     return (
       <div className="shot shot--fallback" aria-hidden="true">
-        <span>🖼</span>
+        <IconImage size={28} />
         {shot.caption && <p>{shot.caption}</p>}
       </div>
     );
