@@ -38,8 +38,9 @@ export default function AdminDeveloperRequestsPage({ site }) {
             <h1>คำขอเป็น Developer</h1>
           </div>
           <p className="banner-note">
-            อนุมัติแล้วระบบจะยกระดับ role เป็น developer ให้อัตโนมัติ — แต่ยังต้องเพิ่มไฟล์{" "}
-            <code>data/developers/{"{id}"}.json</code> เองอีกขั้น เพื่อให้โปรไฟล์นักพัฒนาขึ้นหน้าเว็บจริง
+            อนุมัติแล้วระบบจะยกระดับ role เป็น developer ให้อัตโนมัติ พร้อมเปิด Pull Request สร้างไฟล์{" "}
+            <code>data/developers/{"{id}"}.json</code> ให้เองด้วย — ต้องกด merge PR นั้นอีกทีถึงจะขึ้นเว็บจริง
+            (จุดตรวจสอบสุดท้ายก่อน publish)
           </p>
 
           {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
@@ -96,12 +97,28 @@ function PendingRow({ request, onChanged }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [github, setGithub] = useState(null);
 
   function decide(status) {
     setBusy(true);
     setError("");
-    apiPost("/api/admin/developer-requests", { request_id: request.id, status, admin_note: note })
-      .then(onChanged)
+    setGithub(null);
+    apiPost("/api/admin/developer-requests", {
+      request_id: request.id,
+      status,
+      admin_note: note,
+      // ส่งรายละเอียดที่กรอกไว้ทั้งหมดไปด้วย — ใช้สร้างไฟล์ data/developers/{id}.json อัตโนมัติตอน approve
+      username: request.username,
+      reason: request.reason,
+      portfolio_url: request.portfolio_url,
+      display_name: request.display_name,
+      website: request.website,
+      contact: request.contact,
+    })
+      .then((data) => {
+        if (data.github) setGithub(data.github);
+        if (!data.github || data.github.ok) onChanged();
+      })
       .catch((err) => setError(err.message))
       .finally(() => setBusy(false));
   }
@@ -119,11 +136,27 @@ function PendingRow({ request, onChanged }) {
             </a>
           </p>
         )}
+        {request.website && <p className="dev-row__text">เว็บไซต์: {request.website}</p>}
+        {request.contact && <p className="dev-row__text">ติดต่อ: {request.contact}</p>}
         <label className="form-field">
           <span className="form-field__label">หมายเหตุถึงผู้สมัคร (ถ้ามี)</span>
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
         {error && <span className="field-error">{error}</span>}
+        {github?.ok && (
+          <p className="banner-note banner-note--ok">
+            อนุมัติแล้ว และสร้างไฟล์ให้เรียบร้อย —{" "}
+            <a href={github.pr_url} target="_blank" rel="noreferrer">
+              เปิด Pull Request #{github.pr_number} เพื่อกด merge
+            </a>
+          </p>
+        )}
+        {github && !github.ok && (
+          <p className="banner-note">
+            role เปลี่ยนเป็น developer แล้ว แต่สร้างไฟล์/PR อัตโนมัติไม่สำเร็จ: {github.error} —
+            ลองกด "อนุมัติ" ซ้ำอีกครั้ง หรือเพิ่มไฟล์ <code>data/developers/{"{id}"}.json</code> เองผ่าน GitHub
+          </p>
+        )}
       </div>
       <div className="dev-row__actions">
         <button type="button" className="btn-primary btn-small" onClick={() => decide("approved")} disabled={busy}>
