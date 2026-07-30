@@ -36,9 +36,6 @@ export default function Layout({ site, children }) {
               {site.site_name}
             </Link>
             <div className="masthead__nav">
-              <Link href="/search" className="masthead__search">
-                🔍 ค้นหา
-              </Link>
               <Link href="/dev/submit" className="masthead__search">
                 ➕ ส่งแอป
               </Link>
@@ -52,6 +49,10 @@ export default function Layout({ site, children }) {
             </div>
           </div>
           <p className="masthead__tagline">{site.tagline}</p>
+          <Link href="/search" className="searchbar" aria-label="ค้นหาแอป">
+            <span className="searchbar__icon" aria-hidden="true">🔍</span>
+            ค้นหาแอปและนักพัฒนา
+          </Link>
         </div>
       </header>
 
