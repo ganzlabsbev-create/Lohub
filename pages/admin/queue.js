@@ -17,25 +17,33 @@ export async function getStaticProps() {
 // Part 10: หน้านี้จำกัดเฉพาะบัญชีที่อยู่ใน admin_github_usernames (ดู AdminGuard)
 //
 // เดิมหน้านี้อ่าน/เขียนผ่าน lib/mockAdmin.js (localStorage mock) ซึ่งเป็นคนละระบบกับแอปที่ merge
-// เข้ามาจริงผ่าน PR (data/apps/{app_id}.json ที่ scripts/builder/convert-submissions.js สร้างให้ตอน
-// merge) เลยไม่เคยเห็นแอปที่ merge จริงๆ ในคิวนี้เลย ตอนนี้เปลี่ยนมาอ่าน/เขียนของจริงผ่าน
-// /api/admin/apps/pending (GET) และ /api/admin/apps/{id} (PATCH) แทนแล้ว
+// เข้ามาจริงผ่าน PR เลยไม่เคยเห็นแอปที่ส่งจริงๆ เลย ตอนนี้แก้เป็นของจริง 2 ขั้นตอนต่อกัน:
+//   1) PR ที่ /dev/submit เปิดไว้ (ยังไม่ merge) — กด "ผสาน (merge)" ตรงนี้ได้เลย ไม่ต้องไป GitHub
+//   2) หลัง merge, workflow convert-submissions.yml จะสร้าง data/apps/{id}.json (status: pending)
+//      ให้อัตโนมัติ (รอสักครู่) แล้วมาโผล่ในคิวรอตรวจด้านล่าง กด "อนุมัติ" เพื่อ publish ขึ้นเว็บจริง
 export default function AdminQueuePage({ site }) {
   const { loading: siteLoading, error: siteError, data } = useSearchIndex();
-  const [state, setState] = useState({ loading: true, error: null, apps: null });
+  const [prState, setPrState] = useState({ loading: true, error: null, prs: null });
+  const [appState, setAppState] = useState({ loading: true, error: null, apps: null });
 
-  function load() {
-    setState((s) => ({ ...s, loading: true, error: null }));
+  function loadPRs() {
+    setPrState((s) => ({ ...s, loading: true, error: null }));
+    apiGet("/api/admin/apps/submission-prs")
+      .then((res) => setPrState({ loading: false, error: null, prs: res.prs || [] }))
+      .catch((err) => setPrState({ loading: false, error: err.message, prs: null }));
+  }
+
+  function loadApps() {
+    setAppState((s) => ({ ...s, loading: true, error: null }));
     apiGet("/api/admin/apps/pending")
-      .then((res) => setState({ loading: false, error: null, apps: res.apps || [] }))
-      .catch((err) => setState({ loading: false, error: err.message, apps: null }));
+      .then((res) => setAppState({ loading: false, error: null, apps: res.apps || [] }))
+      .catch((err) => setAppState({ loading: false, error: err.message, apps: null }));
   }
 
   useEffect(() => {
-    load();
+    loadPRs();
+    loadApps();
   }, []);
-
-  const { loading, error, apps } = state;
 
   return (
     <Layout site={site}>
@@ -45,22 +53,30 @@ export default function AdminQueuePage({ site }) {
           <div className="section__head">
             <h1>คิวรอตรวจ</h1>
           </div>
+
+          <h2 style={{ marginTop: 4 }}>PR รอ merge</h2>
           <p className="banner-note">
-            รายการแอปที่ developer ส่งเข้ามาและ merge PR เข้า <code>data/apps/</code> แล้ว แต่ยังไม่ได้
-            publish ขึ้นเว็บ — กด &quot;อนุมัติ&quot; เพื่อเผยแพร่ หรือ &quot;ปฏิเสธ&quot; เพื่อตีกลับ
+            แอปที่ developer เพิ่งส่งผ่านฟอร์ม — ยังไม่เข้า main ต้อง merge ก่อนถึงจะมีไฟล์แอปจริง
           </p>
+          {prState.loading && <StateMessage kind="loading">กำลังโหลด PR...</StateMessage>}
+          {prState.error && <StateMessage kind="error">โหลด PR ไม่สำเร็จ: {prState.error}</StateMessage>}
+          {prState.prs && <PRList prs={prState.prs} onChanged={() => { loadPRs(); loadApps(); }} />}
 
-          {(loading || siteLoading) && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {(error || siteError) && (
-            <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error || siteError}</StateMessage>
+          <h2 style={{ marginTop: 32 }}>แอปรอ publish</h2>
+          <p className="banner-note">
+            แอปที่ merge เข้า main แล้ว (มีไฟล์ใน <code>data/apps/</code> จริง) แต่ยังไม่ขึ้นเว็บ — กด
+            &quot;อนุมัติ&quot; เพื่อเผยแพร่ หรือ &quot;ปฏิเสธ&quot; เพื่อตีกลับ
+          </p>
+          {(appState.loading || siteLoading) && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
+          {(appState.error || siteError) && (
+            <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {appState.error || siteError}</StateMessage>
           )}
-
-          {data && apps && (
+          {data && appState.apps && (
             <QueueList
-              queue={apps}
+              queue={appState.apps}
               developers={data.developers}
               categories={data.categories}
-              onChanged={load}
+              onChanged={loadApps}
             />
           )}
         </section>
@@ -69,9 +85,56 @@ export default function AdminQueuePage({ site }) {
   );
 }
 
+function PRList({ prs, onChanged }) {
+  if (prs.length === 0) {
+    return <StateMessage kind="empty">ไม่มี PR ส่งแอปใหม่ค้างอยู่</StateMessage>;
+  }
+  return (
+    <ul className="dev-list">
+      {prs.map((pr) => (
+        <PRRow key={pr.number} pr={pr} onChanged={onChanged} />
+      ))}
+    </ul>
+  );
+}
+
+function PRRow({ pr, onChanged }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  function merge() {
+    setBusy(true);
+    setError("");
+    apiPatch(`/api/admin/apps/submission-prs/${pr.number}`, { action: "merge" })
+      .then(onChanged)
+      .catch((err) => setError(err.message))
+      .finally(() => setBusy(false));
+  }
+
+  return (
+    <li className="dev-row">
+      <div className="dev-row__body">
+        <p className="dev-row__name">{pr.title}</p>
+        <p className="dev-row__meta mono">
+          #{pr.number} · @{pr.author} · {formatDate(pr.created_at)}
+        </p>
+        {error && <span className="field-error">{error}</span>}
+      </div>
+      <div className="dev-row__actions">
+        <a href={pr.html_url} target="_blank" rel="noreferrer" className="btn-secondary btn-small">
+          ดู diff บน GitHub
+        </a>
+        <button type="button" className="btn-primary btn-small" onClick={merge} disabled={busy}>
+          🔀 ผสาน (merge)
+        </button>
+      </div>
+    </li>
+  );
+}
+
 function QueueList({ queue, developers, categories, onChanged }) {
   if (queue.length === 0) {
-    return <StateMessage kind="empty">ไม่มีแอปรอตรวจตอนนี้ 🎉</StateMessage>;
+    return <StateMessage kind="empty">ไม่มีแอปรอ publish ตอนนี้ 🎉</StateMessage>;
   }
 
   return (
