@@ -1,0 +1,57 @@
+name: Convert app submissions
+
+# รันอัตโนมัติทุกครั้งที่มีการ push เข้า main และมีการแก้ไฟล์ใน submissions/
+# (ครอบคลุมกรณี merge PR ที่ Admin กด approve คำขอส่งแอปใหม่ของ developer)
+# หรือจะสั่งรันเองก็ได้จากแท็บ Actions -> Convert app submissions -> Run workflow
+# (ใช้ workflow_dispatch นี้เพื่อ "ไล่ตรวจย้อนหลัง" กรณีมี submissions/ ค้างอยู่จากก่อนที่ workflow นี้จะถูกสร้าง
+# เพราะ push trigger จะไม่ทำงานย้อนหลังให้กับ commit ที่ merge ไปแล้วในอดีต)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "submissions/**"
+  workflow_dispatch: {}
+
+# กันไม่ให้รันซ้อนกันสองรันพร้อมกัน (ตามที่ scripts/builder/convert-submissions.js สมมติไว้
+# เรื่องการกันชนกันของ app_id) — รอคิวแทนที่จะยกเลิกรันเก่า เพื่อไม่ให้แอปหลุดหาย
+concurrency:
+  group: convert-submissions
+  cancel-in-progress: false
+
+# ต้องให้สิทธิ์เขียนกลับเข้า repo เพื่อ commit ไฟล์ที่แปลงแล้ว
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # ต้อง fetch history เต็มไม่งั้น push กลับอาจ error เรื่อง shallow clone
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Convert submissions -> data/apps
+        run: node scripts/builder/convert-submissions.js
+
+      - name: Rebuild search-index.json
+        run: node scripts/builder/build.js
+
+      - name: Commit converted apps if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add submissions data/apps public/assets/icons public/assets/screenshots public/search-index.json data/manifest.json
+          if git diff --cached --quiet; then
+            echo "ไม่มี submissions ค้างอยู่ ข้าม commit"
+          else
+            git commit -m "chore: convert app submissions [skip ci]"
+            git push
+          fi
