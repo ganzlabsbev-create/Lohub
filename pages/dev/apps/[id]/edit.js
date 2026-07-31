@@ -6,7 +6,8 @@ import StateMessage from "../../../../components/StateMessage";
 import DevGuard from "../../../../components/DevGuard";
 import { useSearchIndex } from "../../../../lib/useSearchIndex";
 import { getSiteSettings } from "../../../../lib/site";
-import { validateVersionForm, buildVersionUpdate } from "../../../../lib/appDraft";
+import { validateVersionForm, buildVersionUpdate, validateExtraLinks, buildExtraInstallMethods } from "../../../../lib/appDraft";
+import { IconClose } from "../../../../components/Icons";
 import {
   getMockSubmissions,
   updateMockSubmission,
@@ -96,6 +97,10 @@ function VersionForm({ app, isPublished, onSaved }) {
     apk_url: isApk ? primaryMethod?.url || "" : "",
     size_mb: isApk ? String(app.size_mb || "") : "",
   });
+  // ลิงก์เว็บเพิ่มเติม (นอกเหนือจากวิธีติดตั้งหลัก) — โหลดจาก install_methods เดิมที่ไม่ใช่ primary
+  const [extraLinks, setExtraLinks] = useState(
+    app.install_methods.filter((m) => m !== primaryMethod && !m.primary).map((m) => ({ name: m.label || "", url: m.url || "" }))
+  );
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -104,15 +109,33 @@ function VersionForm({ app, isPublished, onSaved }) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  function addExtraLink() {
+    setExtraLinks((links) => [...links, { name: "", url: "" }]);
+  }
+
+  function updateExtraLink(index, field, value) {
+    setExtraLinks((links) => links.map((link, i) => (i === index ? { ...link, [field]: value } : link)));
+  }
+
+  function removeExtraLink(index) {
+    setExtraLinks((links) => links.filter((_, i) => i !== index));
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     const { valid, errors: nextErrors } = validateVersionForm(form, { requireFile: isApk });
-    setErrors(nextErrors);
-    if (!valid) return;
+    const extraLinksErrors = validateExtraLinks(extraLinks);
+    setErrors({ ...nextErrors, extra_links: extraLinksErrors });
+    if (!valid || extraLinksErrors) return;
 
     const updatedApp = buildVersionUpdate(app, form, { replaceLatest: !isPublished });
-    onSaved(updatedApp);
-    setSaved(updatedApp);
+    const updatedPrimary = updatedApp.install_methods.find((m) => m.primary) || updatedApp.install_methods[0];
+    const finalApp = {
+      ...updatedApp,
+      install_methods: [updatedPrimary, ...buildExtraInstallMethods(extraLinks)],
+    };
+    onSaved(finalApp);
+    setSaved(finalApp);
   }
 
   function copyJson() {
@@ -192,6 +215,46 @@ function VersionForm({ app, isPublished, onSaved }) {
           : "แอปนี้ยังไม่ผ่านการตรวจ — การแก้ไขจะแทนที่ข้อมูลเวอร์ชันเดิมในคิวรอตรวจ ไม่ได้สะสมเป็นประวัติ"}
       </p>
 
+      <FieldGroup label="ลิงก์เว็บเพิ่มเติม (ไม่บังคับ)">
+        <p className="section__hint">
+          เผื่อว่านอกจากวิธีติดตั้งหลักแล้ว ยังมีเว็บให้ใช้งานก่อนก็ได้ — ใส่ชื่อลิงก์และ URL ได้กี่รายการก็ได้
+        </p>
+        <div className="link-list">
+          {extraLinks.map((link, i) => (
+            <div className="link-row" key={i}>
+              <input
+                className="link-row__name"
+                value={link.name}
+                onChange={(e) => updateExtraLink(i, "name", e.target.value)}
+                placeholder="ชื่อลิงก์ เช่น ใช้บนเว็บ"
+              />
+              <input
+                className="link-row__url"
+                value={link.url}
+                onChange={(e) => updateExtraLink(i, "url", e.target.value)}
+                placeholder="https://example.com"
+              />
+              <button
+                type="button"
+                className="link-row__remove"
+                onClick={() => removeExtraLink(i)}
+                aria-label="ลบลิงก์นี้"
+              >
+                <IconClose size={16} />
+              </button>
+              {errors.extra_links?.[i] && (
+                <p className="field-error link-row__error">
+                  {errors.extra_links[i].name || errors.extra_links[i].url}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+        <button type="button" className="btn-secondary btn-small" onClick={addExtraLink}>
+          ➕ เพิ่มลิงก์
+        </button>
+      </FieldGroup>
+
       <div className="form-actions">
         <button type="submit" className="btn-primary">
           บันทึก
@@ -209,5 +272,17 @@ function Field({ label, error, children }) {
       {children}
       {error && <span className="field-error">{error}</span>}
     </label>
+  );
+}
+
+// เหมือน Field แต่ใช้ <div> แทน <label> — สำหรับกลุ่มที่มีปุ่ม/แถวหลายอันข้างใน
+// (ถ้าใช้ <label> ครอบ การคลิกข้อความ label จะไปโฟกัสแค่ input ตัวแรกข้างในผิดตัว)
+function FieldGroup({ label, error, children }) {
+  return (
+    <div className={`form-field${error ? " form-field--error" : ""}`}>
+      <span className="form-field__label">{label}</span>
+      {children}
+      {error && <span className="field-error">{error}</span>}
+    </div>
   );
 }
