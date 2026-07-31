@@ -7,6 +7,7 @@ import StateMessage from "../../components/StateMessage";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { sortApps, SORT_OPTIONS } from "../../lib/sort";
 import { getSiteSettings } from "../../lib/site";
+import { getEffectiveCategories } from "../../lib/mockAdmin";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -24,7 +25,9 @@ export default function CategoryPage({ site }) {
   const { loading, error, data } = useSearchIndex();
   const [sortBy, setSortBy] = useState("popular");
 
-  const category = data?.categories.find((c) => c.slug === slug);
+  // ใช้หมวดหมู่ effective (รวม override ของ admin) ไม่งั้นแก้หมวดหมู่แล้วจะไม่ขึ้นหน้านี้
+  const categories = data ? getEffectiveCategories(data.categories) : [];
+  const category = categories.find((c) => c.slug === slug);
   const appsInCategory = useMemo(() => {
     if (!data || !category) return [];
     const filtered = data.apps.filter((a) => a.category_ids.includes(category.id));
@@ -74,7 +77,7 @@ export default function CategoryPage({ site }) {
           ) : (
             <div className="app-grid">
               {appsInCategory.map((app) => (
-                <AppCard key={app.id} app={app} categories={data.categories} />
+                <AppCard key={app.id} app={app} categories={categories} />
               ))}
             </div>
           )}
