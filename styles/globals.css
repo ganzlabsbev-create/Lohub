@@ -811,6 +811,47 @@ textarea:focus-visible {
 .btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger-soft); }
 .btn-danger:hover { background: var(--danger-soft); }
 
+/* ---------- Extra web links (submit / edit forms) ---------- */
+.link-list { display: flex; flex-direction: column; gap: 10px; }
+.link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.link-row__name { flex: 1 1 160px; min-width: 0; }
+.link-row__url { flex: 2 1 240px; min-width: 0; }
+.link-row__name,
+.link-row__url {
+  font: inherit;
+  padding: 11px 14px;
+  min-height: 44px;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  transition: border-color 0.12s var(--ease);
+}
+.link-row__name:focus,
+.link-row__url:focus { border-color: var(--ink); outline: none; }
+.link-row__remove {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--outline);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--danger);
+  cursor: pointer;
+  transition: border-color 0.12s var(--ease), background 0.12s var(--ease);
+}
+.link-row__remove:hover { border-color: var(--danger-soft); background: var(--danger-soft); }
+.link-row__error { flex-basis: 100%; margin: 0; }
+
 /* ---------- JSON preview (mock submission result) ---------- */
 .submit-success { display: flex; flex-direction: column; gap: 4px; }
 .json-preview {
