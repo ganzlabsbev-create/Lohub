@@ -118,7 +118,7 @@ export default function SideDrawer({ site, open, onClose }) {
 
           <div className="drawer__divider" />
 
-          <DrawerLink href="/account" icon={<IconSettings size={19} />} onNavigate={onClose}>ตั้งค่า</DrawerLink>
+          <DrawerLink href="/account/settings" icon={<IconSettings size={19} />} onNavigate={onClose}>ตั้งค่า</DrawerLink>
 
           <DrawerGroup icon={<IconInfo size={19} />} label="เกี่ยวกับ">
             <p className="drawer__about-text">{site.tagline}</p>
