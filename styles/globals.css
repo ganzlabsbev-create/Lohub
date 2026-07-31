@@ -202,6 +202,20 @@ textarea:focus-visible {
 .drawer__close { color: var(--surface); }
 .drawer__close:hover { background: rgba(255, 255, 255, 0.1); }
 
+.drawer__profile-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.drawer__profile-row .drawer__profile { margin-bottom: 0; flex: 1; min-width: 0; }
+.drawer__logout {
+  flex-shrink: 0;
+  color: var(--surface);
+  background: rgba(255, 255, 255, 0.06);
+}
+.drawer__logout:hover { background: rgba(255, 255, 255, 0.14); }
+
 .drawer__profile {
   display: flex;
   align-items: center;
