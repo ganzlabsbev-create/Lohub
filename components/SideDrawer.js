@@ -1,17 +1,16 @@
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useSession, signIn, signOut } from "next-auth/react";
 import {
   IconClose,
   IconHome,
   IconGrid,
   IconSearch,
-  IconUpload,
-  IconDashboard,
   IconSettings,
-  IconShield,
   IconInfo,
   IconUser,
+  IconLogout,
   IconChevronDown,
 } from "./Icons";
 
@@ -45,9 +44,15 @@ function DrawerGroup({ icon, label, children, defaultOpen = false }) {
   );
 }
 
-function DrawerProfile() {
+// บั๊กเดิม: ทั้งแถบ (avatar + ชื่อ) ผูก onClick={() => signOut()} ตรงๆ ทำให้กดโปรไฟล์แล้วออกจากระบบทันที
+// (user รายงานว่า "กดโปรไฟล์แล้วล็อกเอาท์") — แก้เป็น: กดแถบโปรไฟล์ -> ไปหน้า /account จริง (มีอยู่แล้ว
+// ครบทุก role) ส่วนปุ่มออกจากระบบแยกออกมาต่างหากเป็นไอคอนเล็กๆ ท้ายแถวแทน ไม่ปนกับการกดไปโปรไฟล์
+function DrawerProfile({ onNavigate }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
   if (status === "loading") return null;
+
   if (!session) {
     return (
       <button type="button" className="drawer__profile" onClick={() => signIn("github")}>
@@ -59,14 +64,31 @@ function DrawerProfile() {
       </button>
     );
   }
+
+  function goToAccount() {
+    router.push("/account");
+    onNavigate?.();
+  }
+
   return (
-    <button type="button" className="drawer__profile" onClick={() => signOut()}>
-      <span className="drawer__avatar"><IconUser size={18} /></span>
-      <div className="drawer__profile-text">
-        <strong>{session.user?.login}</strong>
-        <span>ออกจากระบบ</span>
-      </div>
-    </button>
+    <div className="drawer__profile-row">
+      <button type="button" className="drawer__profile" onClick={goToAccount}>
+        <span className="drawer__avatar"><IconUser size={18} /></span>
+        <div className="drawer__profile-text">
+          <strong>{session.user?.login}</strong>
+          <span>ดูโปรไฟล์ของฉัน</span>
+        </div>
+      </button>
+      <button
+        type="button"
+        className="icon-btn drawer__logout"
+        onClick={() => signOut()}
+        aria-label="ออกจากระบบ"
+        title="ออกจากระบบ"
+      >
+        <IconLogout size={18} />
+      </button>
+    </div>
   );
 }
 
@@ -87,7 +109,7 @@ export default function SideDrawer({ site, open, onClose }) {
           </button>
         </div>
 
-        <DrawerProfile />
+        <DrawerProfile onNavigate={onClose} />
 
         <nav className="drawer__nav">
           <DrawerLink href="/" icon={<IconHome size={19} />} onNavigate={onClose}>หน้าแรก</DrawerLink>
@@ -96,17 +118,7 @@ export default function SideDrawer({ site, open, onClose }) {
 
           <div className="drawer__divider" />
 
-          <DrawerGroup icon={<IconUpload size={19} />} label="พื้นที่นักพัฒนา">
-            <DrawerLink href="/dev/submit" onNavigate={onClose}>ส่งแอปใหม่</DrawerLink>
-            <DrawerLink href="/dev/dashboard" icon={<IconDashboard size={17} />} onNavigate={onClose}>Dashboard นักพัฒนา</DrawerLink>
-            <DrawerLink href="/dev/login" onNavigate={onClose}>เข้าสู่ระบบนักพัฒนา</DrawerLink>
-          </DrawerGroup>
-
-          <DrawerGroup icon={<IconSettings size={19} />} label="ตั้งค่า">
-            <DrawerLink href="/admin/queue" icon={<IconShield size={16} />} onNavigate={onClose}>คิวตรวจสอบแอป (แอดมิน)</DrawerLink>
-            <DrawerLink href="/admin/categories" onNavigate={onClose}>จัดการหมวดหมู่</DrawerLink>
-            <DrawerLink href="/admin/developers" onNavigate={onClose}>จัดการนักพัฒนา</DrawerLink>
-          </DrawerGroup>
+          <DrawerLink href="/account" icon={<IconSettings size={19} />} onNavigate={onClose}>ตั้งค่า</DrawerLink>
 
           <DrawerGroup icon={<IconInfo size={19} />} label="เกี่ยวกับ">
             <p className="drawer__about-text">{site.tagline}</p>

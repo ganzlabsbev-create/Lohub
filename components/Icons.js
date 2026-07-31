@@ -86,3 +86,7 @@ export const IconCode = (p) => (
 export const IconImage = (p) => (
   <Svg {...p}><rect x="3.5" y="4.5" width="17" height="15" rx="2" /><circle cx="9" cy="10" r="1.6" fill="currentColor" stroke="none" /><path d="M4.5 17.5 9.5 12.5 13 16l3-3 3.5 3.5" /></Svg>
 );
+
+export const IconLogout = (p) => (
+  <Svg {...p}><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" /><path d="M15 16l4-4-4-4" /><line x1="19" y1="12" x2="9" y2="12" /></Svg>
+);
