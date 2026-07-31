@@ -8,6 +8,7 @@ import { useSearchIndex } from "../../lib/useSearchIndex";
 import { sortApps } from "../../lib/sort";
 import { formatDate } from "../../lib/format";
 import { getSiteSettings } from "../../lib/site";
+import { getEffectiveCategories } from "../../lib/mockAdmin";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -27,6 +28,8 @@ export default function DeveloperPage({ site }) {
   const apps = developer
     ? sortApps(data.apps.filter((a) => a.developer_id === developer.id), "newest")
     : [];
+  // ใช้หมวดหมู่ effective (รวม override ของ admin) ไม่งั้นแก้หมวดหมู่แล้วจะไม่ขึ้นหน้านี้
+  const categories = data ? getEffectiveCategories(data.categories) : [];
 
   return (
     <Layout site={site}>
@@ -90,7 +93,7 @@ export default function DeveloperPage({ site }) {
             ) : (
               <div className="app-grid">
                 {apps.map((app) => (
-                  <AppCard key={app.id} app={app} categories={data.categories} />
+                  <AppCard key={app.id} app={app} categories={categories} />
                 ))}
               </div>
             )}
