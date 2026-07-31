@@ -59,9 +59,9 @@
     "th",
     "en"
   ],
-  "verified": false,
-  "status": "pending",
+  "verified": true,
+  "status": "published",
   "download_count": 0,
   "created_at": "2026-07-31T08:56:21.332Z",
-  "updated_at": "2026-07-31T08:56:21.332Z"
+  "updated_at": "2026-07-31T11:33:23.458Z"
 }
