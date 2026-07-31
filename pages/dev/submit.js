@@ -6,6 +6,7 @@ import DevGuard from "../../components/DevGuard";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
 import { slugify, validateDraftForm } from "../../lib/appDraft";
+import { IconClose } from "../../components/Icons";
 import { apiPost } from "../../lib/apiClient";
 
 export async function getStaticProps() {
@@ -26,6 +27,7 @@ const EMPTY_FORM = {
   install_url: "",
   current_version: "1.0.0",
   size_mb: "",
+  extra_links: [],
 };
 
 export default function SubmitAppPage({ site }) {
@@ -92,6 +94,21 @@ function SubmitForm({ developer, categories, apps, site }) {
       const has = f[field].includes(value);
       return { ...f, [field]: has ? f[field].filter((v) => v !== value) : [...f[field], value] };
     });
+  }
+
+  function addExtraLink() {
+    setForm((f) => ({ ...f, extra_links: [...f.extra_links, { name: "", url: "" }] }));
+  }
+
+  function updateExtraLink(index, field, value) {
+    setForm((f) => ({
+      ...f,
+      extra_links: f.extra_links.map((link, i) => (i === index ? { ...link, [field]: value } : link)),
+    }));
+  }
+
+  function removeExtraLink(index) {
+    setForm((f) => ({ ...f, extra_links: f.extra_links.filter((_, i) => i !== index) }));
   }
 
   function onIconChange(e) {
@@ -326,6 +343,46 @@ function SubmitForm({ developer, categories, apps, site }) {
           <input value={form.install_url} onChange={(e) => update("install_url", e.target.value)} placeholder="https://example.com/app" />
         </Field>
       )}
+
+      <FieldGroup label="ลิงก์เว็บเพิ่มเติม (ไม่บังคับ)">
+        <p className="section__hint">
+          เผื่อว่านอกจากวิธีติดตั้งด้านบนแล้ว ยังมีเว็บให้ใช้งานก่อนก็ได้ — ใส่ชื่อลิงก์และ URL ได้กี่รายการก็ได้
+        </p>
+        <div className="link-list">
+          {form.extra_links.map((link, i) => (
+            <div className="link-row" key={i}>
+              <input
+                className="link-row__name"
+                value={link.name}
+                onChange={(e) => updateExtraLink(i, "name", e.target.value)}
+                placeholder="ชื่อลิงก์ เช่น ใช้บนเว็บ"
+              />
+              <input
+                className="link-row__url"
+                value={link.url}
+                onChange={(e) => updateExtraLink(i, "url", e.target.value)}
+                placeholder="https://example.com"
+              />
+              <button
+                type="button"
+                className="link-row__remove"
+                onClick={() => removeExtraLink(i)}
+                aria-label="ลบลิงก์นี้"
+              >
+                <IconClose size={16} />
+              </button>
+              {errors.extra_links?.[i] && (
+                <p className="field-error link-row__error">
+                  {errors.extra_links[i].name || errors.extra_links[i].url}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+        <button type="button" className="btn-secondary btn-small" onClick={addExtraLink}>
+          ➕ เพิ่มลิงก์
+        </button>
+      </FieldGroup>
 
       <Field label="ไอคอนแอป (PNG เท่านั้น)" error={errors.icon}>
         <input
