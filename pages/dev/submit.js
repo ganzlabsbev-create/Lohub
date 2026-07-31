@@ -6,6 +6,7 @@ import DevGuard from "../../components/DevGuard";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
 import { slugify, validateDraftForm } from "../../lib/appDraft";
+import { getEffectiveCategories } from "../../lib/mockAdmin";
 import { IconClose } from "../../components/Icons";
 import { apiPost } from "../../lib/apiClient";
 
@@ -46,7 +47,7 @@ export default function SubmitAppPage({ site }) {
             {(developer) => (
               <SubmitForm
                 developer={developer}
-                categories={data.categories}
+                categories={getEffectiveCategories(data.categories)}
                 apps={data.apps}
                 site={site}
               />
