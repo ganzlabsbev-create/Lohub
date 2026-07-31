@@ -50,6 +50,7 @@ export default function AccountPage({ site }) {
 
 function ProfilePanel() {
   const [state, setState] = useState({ loading: true, error: null, profile: null });
+  const { data: searchIndex } = useSearchIndex();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -74,6 +75,21 @@ function ProfilePanel() {
   const verified = !!memberRow?.verified;
   const joinedAt = memberRow?.created_at || memberRow?.joined_at;
 
+  // /api/profile คืน "role" เดียว ตามลำดับความสำคัญ admin > developer > member (ของเดิม, ห้ามแก้)
+  // แต่บัญชีจริงอาจมีสถานะซ้อนกันได้ (เช่น เป็นทั้งแอดมินและมีโปรไฟล์นักพัฒนาอยู่แล้ว) —
+  // เช็คสถานะ developer แยกต่างหากจาก search-index.json (ข้อมูลสาธารณะเดียวกับที่หน้า /developer ใช้)
+  // เพื่อโชว์ทุกแผงที่เกี่ยวข้อง ไม่ผูกกับ role เดียวที่ backend ส่งมา (ไม่แตะ resolveRole/isAdminUsername)
+  const isAdmin = role === "admin";
+  const developerRecord = searchIndex?.developers.find(
+    (d) => (d.github_username || "").toLowerCase() === username.toLowerCase()
+  );
+  const isDeveloper = role === "developer" || !!developerRecord;
+
+  const statusLabels = [];
+  if (isAdmin) statusLabels.push(ROLE_LABEL.admin);
+  if (isDeveloper) statusLabels.push(ROLE_LABEL.developer);
+  if (!statusLabels.length) statusLabels.push(ROLE_LABEL.member);
+
   return (
     <>
       <div className="account-head">
@@ -95,7 +111,7 @@ function ProfilePanel() {
             )}
           </p>
           <p className="account-role mono">
-            @{username} · {ROLE_LABEL[role] || role}
+            @{username} · {statusLabels.join(" · ")}
             {joinedAt ? ` · เข้าร่วมเมื่อ ${formatDate(joinedAt)}` : ""}
           </p>
         </div>
@@ -110,9 +126,12 @@ function ProfilePanel() {
         </Link>
       </div>
 
-      {role === "member" && <DeveloperRequestPanel />}
-      {role === "developer" && <DeveloperProfileSummary username={username} />}
-      {role === "admin" && <AdminQuickLinks />}
+      {isDeveloper ? (
+        <DeveloperProfileSummary username={username} />
+      ) : (
+        role === "member" && <DeveloperRequestPanel />
+      )}
+      {isAdmin && <AdminQuickLinks />}
     </>
   );
 }
