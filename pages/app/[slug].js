@@ -13,7 +13,7 @@ import StateMessage from "../../components/StateMessage";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { formatSize, formatDate } from "../../lib/format";
 import { getSiteSettings } from "../../lib/site";
-import { getMockApprovedApps } from "../../lib/mockAdmin";
+import { getMockApprovedApps, getEffectiveCategories } from "../../lib/mockAdmin";
 import { isAdminUsername } from "../../lib/auth";
 import { apiGet, apiPost, apiDelete } from "../../lib/apiClient";
 
@@ -37,8 +37,10 @@ export default function AppDetailPage({ site }) {
   const mockApproved = data ? Object.values(getMockApprovedApps()) : [];
   const app = data?.apps.find((a) => a.slug === slug) || mockApproved.find((a) => a.slug === slug);
   const developer = app && data.developers.find((d) => d.id === app.developer_id);
+  // ใช้หมวดหมู่ effective (รวม override ของ admin) ไม่งั้นแก้หมวดหมู่แล้วจะไม่ขึ้นหน้านี้
+  const categories = data ? getEffectiveCategories(data.categories) : [];
   const cats = app
-    ? (app.category_ids || []).map((id) => data.categories.find((c) => c.id === id)).filter(Boolean)
+    ? (app.category_ids || []).map((id) => categories.find((c) => c.id === id)).filter(Boolean)
     : [];
   const accentColor = cats[0]?.color || "#A9A38C";
 
@@ -127,7 +129,7 @@ export default function AppDetailPage({ site }) {
 
           <ReviewsSection app={app} />
 
-          <RelatedApps app={app} categories={data.categories} allApps={data.apps} />
+          <RelatedApps app={app} categories={categories} allApps={data.apps} />
         </>
       )}
     </Layout>
