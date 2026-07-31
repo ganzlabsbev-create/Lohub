@@ -57,8 +57,9 @@
     "en"
   ],
   "verified": false,
-  "status": "pending",
+  "status": "rejected",
   "download_count": 0,
   "created_at": "2026-07-31T09:53:04.977Z",
-  "updated_at": "2026-07-31T09:53:04.977Z"
+  "updated_at": "2026-07-31T11:33:14.595Z",
+  "reject_reason": "กาก"
 }
