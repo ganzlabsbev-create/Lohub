@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "id": "gookoo",
+  "name": "GooKoo",
+  "slug": "gookoo",
+  "developer_id": "dev_0003",
+  "category_ids": [
+    "cat_002",
+    "cat_004"
+  ],
+  "description_short": "A modern music player for YouTube and local audio.",
+  "description_full": "GooKoo An ad-free music player app that also searches for songs from YouTube MP3. Download the APK or use it for free via the website.",
+  "icon": {
+    "type": "local",
+    "path": "/assets/icons/gookoo.png"
+  },
+  "screenshots": [],
+  "install_methods": [
+    {
+      "type": "apk",
+      "label": "Download APK",
+      "url": "https://github.com/ganzlabsbev-create/GooKoo-Apk/raw/main/releases/GooKoo.apk",
+      "primary": true
+    },
+    {
+      "type": "pwa",
+      "label": "GooKoo website",
+      "url": "https://gookoo.vercel.app/",
+      "primary": false
+    }
+  ],
+  "current_version": "1.0.0",
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "apk_url": "https://github.com/ganzlabsbev-create/GooKoo-Apk/raw/main/releases/GooKoo.apk",
+      "sha256": null,
+      "date": "2026-07-31T08:56:21.332Z",
+      "note": "ส่งครั้งแรก"
+    }
+  ],
+  "size_mb": 2.41,
+  "min_os": "",
+  "license": "Proprietary",
+  "features": [
+    "YouTube Music",
+    "Local MP3",
+    "Playlists",
+    "Synced Lyrics (Beta)",
+    "Ad-Free Experience",
+    "PWA Support"
+  ],
+  "languages": [
+    "th",
+    "en"
+  ],
+  "verified": false,
+  "status": "pending",
+  "download_count": 0,
+  "created_at": "2026-07-31T08:56:21.332Z",
+  "updated_at": "2026-07-31T08:56:21.332Z"
+}
