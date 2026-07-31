@@ -99,6 +99,15 @@ function ProfilePanel() {
             {joinedAt ? ` · เข้าร่วมเมื่อ ${formatDate(joinedAt)}` : ""}
           </p>
         </div>
+        <Link
+          href="/account/settings"
+          className="icon-btn"
+          aria-label="ตั้งค่า"
+          title="ตั้งค่า"
+          style={{ marginLeft: "auto" }}
+        >
+          ⚙️
+        </Link>
       </div>
 
       {role === "member" && <DeveloperRequestPanel />}
@@ -194,20 +203,18 @@ function DeveloperProfileSummary({ username }) {
   );
 }
 
+// ย่อจากลิงก์แอดมินยาวๆ ทุกหน้าย่อย เหลือปุ่มเดียวไปหน้า /admin — เมนูย่อยแอดมิน
+// (คิว/นักพัฒนา/หมวดหมู่/รายงาน/รีวิว/สมาชิก) ให้ไปอยู่ในหน้า /admin เอง ไม่ต้องแปะซ้ำไว้ที่ Account
 function AdminQuickLinks() {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>เมนูแอดมิน</h2>
+        <h2>แอดมิน</h2>
       </div>
-      <div className="dev-head__links" style={{ flexWrap: "wrap" }}>
-        <Link href="/admin/queue">🗂 คิวรอตรวจแอป</Link>
-        <Link href="/admin/developer-requests">🧑‍💻 คำขอเป็น Developer</Link>
-        <Link href="/admin/developers">👥 จัดการนักพัฒนา</Link>
-        <Link href="/admin/categories">🏷 หมวดหมู่</Link>
-        <Link href="/admin/reports">🚩 รายงาน</Link>
-        <Link href="/admin/reviews">⭐ รีวิว</Link>
-        <Link href="/admin/members">👤 สมาชิก</Link>
+      <div className="form-actions">
+        <Link href="/admin" className="btn-primary">
+          🛠 ไปที่ Admin Panel
+        </Link>
       </div>
     </section>
   );
@@ -299,7 +306,9 @@ function DeveloperRequestPanel() {
       </p>
       <p className="dev-row__text" style={{ fontSize: "0.85rem" }}>
         มีโปรไฟล์นักพัฒนาอยู่แล้วในระบบ (บัญชี GitHub อื่น)?{" "}
-        <Link href="/dev/login">เข้าสู่ระบบนักพัฒนา</Link>
+        <button type="button" className="link-button" onClick={() => signIn("github")}>
+          เข้าสู่ระบบนักพัฒนา
+        </button>
       </p>
 
       {request?.status === "rejected" && (
