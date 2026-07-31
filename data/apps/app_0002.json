@@ -1,20 +1,25 @@
 {
   "schema_version": "1.0",
-  "id": "gookoo",
-  "name": "GooKoo",
-  "slug": "gookoo",
+  "id": "app_0002",
+  "name": "GooKoo - music",
+  "slug": "gookoo-music",
   "developer_id": "dev_0003",
   "category_ids": [
     "cat_002",
     "cat_004"
   ],
-  "description_short": "A modern music player for YouTube and local audio.",
-  "description_full": "GooKoo An ad-free music player app that also searches for songs from YouTube MP3. Download the APK or use it for free via the website.",
+  "description_short": "Music player apps, YouTube, and MP3.",
+  "description_full": "An ad-free music player app that can search YouTube, import MP3 files, create your own playlists, and supports web-based PWA/APK downloads. Its small size makes it easy to use.",
   "icon": {
     "type": "local",
-    "path": "/assets/icons/gookoo.png"
+    "path": "/assets/icons/app_0002.png"
   },
-  "screenshots": [],
+  "screenshots": [
+    "/assets/screenshots/app_0002-01.png",
+    "/assets/screenshots/app_0002-02.png",
+    "/assets/screenshots/app_0002-03.png",
+    "/assets/screenshots/app_0002-04.png"
+  ],
   "install_methods": [
     {
       "type": "apk",
@@ -24,7 +29,7 @@
     },
     {
       "type": "pwa",
-      "label": "GooKoo website",
+      "label": "website",
       "url": "https://gookoo.vercel.app/",
       "primary": false
     }
@@ -34,8 +39,8 @@
     {
       "version": "1.0.0",
       "apk_url": "https://github.com/ganzlabsbev-create/GooKoo-Apk/raw/main/releases/GooKoo.apk",
-      "sha256": null,
-      "date": "2026-07-31T08:56:21.332Z",
+      "sha256": "01577ab5daa32d6538b1ddfeb6232a9ae8b77e0772a9b102ba4a52e7861fdbda",
+      "date": "2026-07-31T09:53:04.977Z",
       "note": "ส่งครั้งแรก"
     }
   ],
@@ -43,12 +48,9 @@
   "min_os": "",
   "license": "Proprietary",
   "features": [
-    "YouTube Music",
-    "Local MP3",
-    "Playlists",
-    "Synced Lyrics (Beta)",
-    "Ad-Free Experience",
-    "PWA Support"
+    "Easy to use",
+    "small app",
+    "No ads"
   ],
   "languages": [
     "th",
@@ -57,6 +59,6 @@
   "verified": false,
   "status": "pending",
   "download_count": 0,
-  "created_at": "2026-07-31T08:56:21.332Z",
-  "updated_at": "2026-07-31T08:56:21.332Z"
+  "created_at": "2026-07-31T09:53:04.977Z",
+  "updated_at": "2026-07-31T09:53:04.977Z"
 }
