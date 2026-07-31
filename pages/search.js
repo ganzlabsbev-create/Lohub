@@ -6,6 +6,7 @@ import StateMessage from "../components/StateMessage";
 import { useSearchIndex } from "../lib/useSearchIndex";
 import { searchApps } from "../lib/search";
 import { getSiteSettings } from "../lib/site";
+import { getEffectiveCategories } from "../lib/mockAdmin";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -39,6 +40,8 @@ export default function SearchPage({ site }) {
     if (!data) return [];
     return searchApps(data.apps, query);
   }, [data, query]);
+  // ใช้หมวดหมู่ effective (รวม override ของ admin) ไม่งั้นแก้หมวดหมู่แล้วจะไม่ขึ้นหน้านี้
+  const categories = data ? getEffectiveCategories(data.categories) : [];
 
   return (
     <Layout site={site}>
@@ -74,7 +77,7 @@ export default function SearchPage({ site }) {
               <p className="search-count">พบ {results.length} แอป</p>
               <div className="app-grid">
                 {results.map((app) => (
-                  <AppCard key={app.id} app={app} categories={data.categories} />
+                  <AppCard key={app.id} app={app} categories={categories} />
                 ))}
               </div>
             </>

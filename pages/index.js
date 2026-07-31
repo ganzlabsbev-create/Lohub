@@ -7,6 +7,7 @@ import { IconSearch } from "../components/Icons";
 import { useSearchIndex } from "../lib/useSearchIndex";
 import { sortApps } from "../lib/sort";
 import { getSiteSettings } from "../lib/site";
+import { getEffectiveCategories } from "../lib/mockAdmin";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -14,6 +15,9 @@ export async function getStaticProps() {
 
 export default function Home({ site }) {
   const { loading, error, data } = useSearchIndex();
+  // ใช้หมวดหมู่ "effective" (รวม override ที่ admin แก้ไว้) ไม่ใช่ data.categories ตรงๆ
+  // ไม่งั้นแอดมินแก้หมวดหมู่แล้วจะเห็นผลแค่ในหน้า /admin/categories เท่านั้น ไม่ขึ้นหน้าหลัก
+  const categories = data ? getEffectiveCategories(data.categories) : [];
 
   return (
     <Layout site={site}>
@@ -40,7 +44,7 @@ export default function Home({ site }) {
               <h2>หมวดหมู่</h2>
             </div>
             <div className="cat-row">
-              {[...data.categories]
+              {[...categories]
                 .sort((a, b) => a.order - b.order)
                 .map((c) => (
                   <CategoryPill key={c.id} category={c} />
@@ -48,9 +52,9 @@ export default function Home({ site }) {
             </div>
           </section>
 
-          <FeaturedSection apps={data.apps} categories={data.categories} />
-          <RecommendedSection apps={data.apps} categories={data.categories} />
-          <NewestSection apps={data.apps} categories={data.categories} />
+          <FeaturedSection apps={data.apps} categories={categories} />
+          <RecommendedSection apps={data.apps} categories={categories} />
+          <NewestSection apps={data.apps} categories={categories} />
         </>
       )}
     </Layout>
