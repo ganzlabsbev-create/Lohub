@@ -187,7 +187,8 @@ function DeveloperProfileSummary({ username }) {
       </div>
 
       <p className="banner-note" style={{ marginTop: 16 }}>
-        ไปที่ <Link href="/dev/dashboard">Dashboard นักพัฒนา</Link> เพื่อส่งแอปใหม่หรืออัปเดตแอปที่มีอยู่
+        ไปที่ <Link href="/dev/dashboard">Dashboard นักพัฒนา</Link> เพื่ออัปเดตแอปที่มีอยู่ หรือ{" "}
+        <Link href="/dev/submit">ส่งแอปใหม่</Link> เข้าคิวตรวจได้เลย
       </p>
     </section>
   );
@@ -295,6 +296,10 @@ function DeveloperRequestPanel() {
       </div>
       <p className="dev-row__text">
         อยากลงแอปของคุณเองในเว็บนี้? สมัครอัพเกรดเป็น Developer — คำขอจะไปรอแอดมินตรวจและอนุมัติ
+      </p>
+      <p className="dev-row__text" style={{ fontSize: "0.85rem" }}>
+        มีโปรไฟล์นักพัฒนาอยู่แล้วในระบบ (บัญชี GitHub อื่น)?{" "}
+        <Link href="/dev/login">เข้าสู่ระบบนักพัฒนา</Link>
       </p>
 
       {request?.status === "rejected" && (
