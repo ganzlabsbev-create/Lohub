@@ -5,8 +5,8 @@ import StateMessage from "../../components/StateMessage";
 import DevGuard from "../../components/DevGuard";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
-import { slugify, nextAppId, validateDraftForm, buildAppDraft } from "../../lib/appDraft";
-import { addMockSubmission } from "../../lib/mockAuth";
+import { slugify, validateDraftForm } from "../../lib/appDraft";
+import { apiPost } from "../../lib/apiClient";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -56,12 +56,28 @@ export default function SubmitAppPage({ site }) {
   );
 }
 
+const MAX_SCREENSHOTS = 8;
+
+// อ่านไฟล์เป็น data URL (base64) ฝั่ง browser — ใช้ส่งไอคอน/ภาพหน้าจอไป /api/dev/submit-app
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(`อ่านไฟล์ ${file.name} ไม่สำเร็จ`));
+    reader.readAsDataURL(file);
+  });
+}
+
 function SubmitForm({ developer, categories, apps, site }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [slugTouched, setSlugTouched] = useState(false);
   const [errors, setErrors] = useState({});
-  const [draft, setDraft] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [iconFile, setIconFile] = useState(null);
+  const [screenshotFiles, setScreenshotFiles] = useState([]);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [result, setResult] = useState(null);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -78,54 +94,91 @@ function SubmitForm({ developer, categories, apps, site }) {
     });
   }
 
-  function handleSubmit(e) {
+  function onIconChange(e) {
+    const file = e.target.files?.[0] || null;
+    setIconFile(file);
+    setErrors((er) => ({
+      ...er,
+      icon: file && file.type !== "image/png" ? "ไฟล์ไอคอนต้องเป็น PNG เท่านั้น" : null,
+    }));
+  }
+
+  function onScreenshotsChange(e) {
+    const files = Array.from(e.target.files || []);
+    const nonPng = files.some((f) => f.type !== "image/png");
+    setScreenshotFiles(files.slice(0, MAX_SCREENSHOTS));
+    setErrors((er) => ({
+      ...er,
+      screenshots: nonPng
+        ? "รับเฉพาะไฟล์ PNG เท่านั้น"
+        : files.length > MAX_SCREENSHOTS
+        ? `เลือกได้สูงสุด ${MAX_SCREENSHOTS} ภาพ (ใช้ ${MAX_SCREENSHOTS} ภาพแรกที่เลือก)`
+        : null,
+    }));
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     const existingSlugs = apps.map((a) => a.slug);
     const { valid, errors: nextErrors } = validateDraftForm(form, {
       existingSlugs,
       licenseOptions: site.license_options,
     });
-    setErrors(nextErrors);
-    if (!valid) return;
+    const iconError = !iconFile
+      ? "กรุณาแนบไอคอนแอป (PNG)"
+      : iconFile.type !== "image/png"
+      ? "ไฟล์ไอคอนต้องเป็น PNG เท่านั้น"
+      : null;
+    setErrors({ ...nextErrors, icon: iconError });
+    if (!valid || iconError) return;
 
-    const appId = nextAppId(apps);
-    const built = buildAppDraft(form, { developerId: developer.id, appId });
-    addMockSubmission(built);
-    setDraft(built);
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const iconBase64 = await fileToDataUrl(iconFile);
+      const screenshotsBase64 = await Promise.all(screenshotFiles.map(fileToDataUrl));
+      const res = await apiPost("/api/dev/submit-app", {
+        form,
+        icon: { base64: iconBase64 },
+        screenshots: screenshotsBase64.map((base64) => ({ base64 })),
+      });
+      setResult(res);
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function startAnother() {
-    setDraft(null);
+    setResult(null);
     setForm(EMPTY_FORM);
     setSlugTouched(false);
     setErrors({});
-    setCopied(false);
+    setIconFile(null);
+    setScreenshotFiles([]);
+    setFileInputKey((k) => k + 1); // บังคับ remount <input type="file"> เพื่อล้างค่าที่เลือกไว้
+    setSubmitError("");
   }
 
-  function copyJson() {
-    navigator.clipboard.writeText(JSON.stringify(draft, null, 2)).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  if (draft) {
+  if (result) {
     return (
       <div className="submit-success">
         <p className="banner-note banner-note--ok">
-          ✅ สร้าง draft สำเร็จ! บันทึกไว้ในเครื่องนี้แล้ว (สถานะ: รอตรวจ)
+          ✅ สร้าง Pull Request สำเร็จ! ระบบจะแจ้ง admin ให้ตรวจและ merge ก่อนแอปจะขึ้นเว็บจริง
         </p>
         <p>
-          ขั้นตอนต่อไป (จะทำระบบจริงใน Part 10): ระบบจะสร้างไฟล์นี้เป็น{" "}
-          <code>data/pending/{draft.id}.json</code> ผ่าน PR อัตโนมัติ ตอนนี้ยังเป็น mock — คัดลอก JSON
-          ด้านล่างไปใช้ต่อได้ ดูสถานะการส่งทั้งหมดได้ที่{" "}
-          <Link href="/dev/dashboard">Dashboard</Link>
+          ดูสถานะ PR ได้ที่{" "}
+          <a href={result.pr_url} target="_blank" rel="noreferrer">
+            {result.pr_url}
+          </a>{" "}
+          — หลัง admin กด merge ระบบจะกำหนด app_id จริง ย้ายไฟล์เข้า <code>data/apps/</code> และขึ้นเว็บให้
+          อัตโนมัติ ดูสถานะการส่งทั้งหมดได้ที่ <Link href="/dev/dashboard">Dashboard</Link>
         </p>
-        <pre className="json-preview">{JSON.stringify(draft, null, 2)}</pre>
         <div className="form-actions">
-          <button type="button" className="btn-primary" onClick={copyJson}>
-            {copied ? "คัดลอกแล้ว ✓" : "คัดลอก JSON"}
-          </button>
+          <a href={result.pr_url} target="_blank" rel="noreferrer" className="btn-primary">
+            เปิดดู Pull Request
+          </a>
           <button type="button" className="btn-secondary" onClick={startAnother}>
             ส่งแอปอีกรายการ
           </button>
@@ -274,13 +327,34 @@ function SubmitForm({ developer, categories, apps, site }) {
         </Field>
       )}
 
-      <p className="section__hint">
-        ไอคอน/ภาพหน้าจอยังไม่รองรับการอัปโหลดในตอนนี้ — เพิ่มทีหลังผ่าน PR ได้ (ดูโครงสร้างไฟล์ในสเปก)
-      </p>
+      <Field label="ไอคอนแอป (PNG เท่านั้น)" error={errors.icon}>
+        <input
+          key={`icon-${fileInputKey}`}
+          type="file"
+          accept="image/png"
+          onChange={onIconChange}
+        />
+      </Field>
+      {iconFile && <p className="section__hint">เลือกแล้ว: {iconFile.name}</p>}
+
+      <Field label={`ภาพหน้าจอ (PNG, ไม่บังคับ, สูงสุด ${MAX_SCREENSHOTS} ภาพ)`} error={errors.screenshots}>
+        <input
+          key={`screenshots-${fileInputKey}`}
+          type="file"
+          accept="image/png"
+          multiple
+          onChange={onScreenshotsChange}
+        />
+      </Field>
+      {screenshotFiles.length > 0 && (
+        <p className="section__hint">เลือกแล้ว {screenshotFiles.length} ภาพ: {screenshotFiles.map((f) => f.name).join(", ")}</p>
+      )}
+
+      {submitError && <p className="field-error">{submitError}</p>}
 
       <div className="form-actions">
-        <button type="submit" className="btn-primary">
-          ส่งแอปนี้เข้าคิวตรวจ
+        <button type="submit" className="btn-primary" disabled={submitting}>
+          {submitting ? "กำลังส่ง..." : "ส่งแอปนี้เข้าคิวตรวจ"}
         </button>
         <Link href="/">ยกเลิก</Link>
       </div>
