@@ -8,24 +8,34 @@ import AdminGuard from "../../components/AdminGuard";
 import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
 import { formatDate, formatSize } from "../../lib/format";
-import { getPendingQueue, approveMockSubmission, rejectMockSubmission } from "../../lib/mockAdmin";
+import { apiGet, apiPatch } from "../../lib/apiClient";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
 }
 
 // Part 10: หน้านี้จำกัดเฉพาะบัญชีที่อยู่ใน admin_github_usernames (ดู AdminGuard)
+//
+// เดิมหน้านี้อ่าน/เขียนผ่าน lib/mockAdmin.js (localStorage mock) ซึ่งเป็นคนละระบบกับแอปที่ merge
+// เข้ามาจริงผ่าน PR (data/apps/{app_id}.json ที่ scripts/builder/convert-submissions.js สร้างให้ตอน
+// merge) เลยไม่เคยเห็นแอปที่ merge จริงๆ ในคิวนี้เลย ตอนนี้เปลี่ยนมาอ่าน/เขียนของจริงผ่าน
+// /api/admin/apps/pending (GET) และ /api/admin/apps/{id} (PATCH) แทนแล้ว
 export default function AdminQueuePage({ site }) {
-  const { loading, error, data } = useSearchIndex();
-  const [queue, setQueue] = useState(null);
+  const { loading: siteLoading, error: siteError, data } = useSearchIndex();
+  const [state, setState] = useState({ loading: true, error: null, apps: null });
+
+  function load() {
+    setState((s) => ({ ...s, loading: true, error: null }));
+    apiGet("/api/admin/apps/pending")
+      .then((res) => setState({ loading: false, error: null, apps: res.apps || [] }))
+      .catch((err) => setState({ loading: false, error: err.message, apps: null }));
+  }
 
   useEffect(() => {
-    setQueue(getPendingQueue());
+    load();
   }, []);
 
-  function refresh() {
-    setQueue(getPendingQueue());
-  }
+  const { loading, error, apps } = state;
 
   return (
     <Layout site={site}>
@@ -36,19 +46,21 @@ export default function AdminQueuePage({ site }) {
             <h1>คิวรอตรวจ</h1>
           </div>
           <p className="banner-note">
-            รายการแอปที่ developer ส่งเข้ามาและยังไม่ผ่านการตรวจ — ในระบบจริง (Part 10) ทุกแถวคือ 1 Pull
-            Request ที่รอ merge เข้า <code>data/apps/</code> ตอนนี้ยังเป็นโหมดทดสอบในเครื่องนี้เท่านั้น
+            รายการแอปที่ developer ส่งเข้ามาและ merge PR เข้า <code>data/apps/</code> แล้ว แต่ยังไม่ได้
+            publish ขึ้นเว็บ — กด &quot;อนุมัติ&quot; เพื่อเผยแพร่ หรือ &quot;ปฏิเสธ&quot; เพื่อตีกลับ
           </p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
+          {(loading || siteLoading) && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
+          {(error || siteError) && (
+            <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error || siteError}</StateMessage>
+          )}
 
-          {data && queue && (
+          {data && apps && (
             <QueueList
-              queue={queue}
+              queue={apps}
               developers={data.developers}
               categories={data.categories}
-              onChanged={refresh}
+              onChanged={load}
             />
           )}
         </section>
@@ -78,6 +90,7 @@ function QueueList({ queue, developers, categories, onChanged }) {
 }
 
 function QueueItem({ draft, developer, categories, onChanged }) {
+  const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
@@ -85,8 +98,12 @@ function QueueItem({ draft, developer, categories, onChanged }) {
   const primaryMethod = draft.install_methods?.find((m) => m.primary) || draft.install_methods?.[0];
 
   function approve() {
-    approveMockSubmission(draft);
-    onChanged();
+    setBusy(true);
+    setError("");
+    apiPatch(`/api/admin/apps/${draft.id}`, { action: "approve" })
+      .then(onChanged)
+      .catch((err) => setError(err.message))
+      .finally(() => setBusy(false));
   }
 
   function confirmReject() {
@@ -94,8 +111,12 @@ function QueueItem({ draft, developer, categories, onChanged }) {
       setError("กรอกเหตุผลอย่างน้อย 3 ตัวอักษร (developer จะเห็นข้อความนี้)");
       return;
     }
-    rejectMockSubmission(draft, reason);
-    onChanged();
+    setBusy(true);
+    setError("");
+    apiPatch(`/api/admin/apps/${draft.id}`, { action: "reject", reason })
+      .then(onChanged)
+      .catch((err) => setError(err.message))
+      .finally(() => setBusy(false));
   }
 
   return (
@@ -139,12 +160,19 @@ function QueueItem({ draft, developer, categories, onChanged }) {
         </div>
       </dl>
 
+      {error && <p className="field-error">{error}</p>}
+
       {!rejecting ? (
         <div className="form-actions">
-          <button type="button" className="btn-primary" onClick={approve}>
+          <button type="button" className="btn-primary" onClick={approve} disabled={busy}>
             ✅ อนุมัติ
           </button>
-          <button type="button" className="btn-danger" onClick={() => setRejecting(true)}>
+          <button
+            type="button"
+            className="btn-danger"
+            onClick={() => setRejecting(true)}
+            disabled={busy}
+          >
             ✕ ปฏิเสธ
           </button>
           {developer && (
@@ -166,10 +194,9 @@ function QueueItem({ draft, developer, categories, onChanged }) {
               }}
               placeholder="เช่น ลิงก์ APK เข้าไม่ได้ / คำอธิบายไม่ตรงกับแอปจริง"
             />
-            {error && <span className="field-error">{error}</span>}
           </label>
           <div className="form-actions">
-            <button type="button" className="btn-danger" onClick={confirmReject}>
+            <button type="button" className="btn-danger" onClick={confirmReject} disabled={busy}>
               ยืนยันปฏิเสธ
             </button>
             <button
@@ -180,6 +207,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
                 setReason("");
                 setError("");
               }}
+              disabled={busy}
             >
               ยกเลิก
             </button>
