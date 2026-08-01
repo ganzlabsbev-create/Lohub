@@ -84,6 +84,11 @@ function DashboardBody({ developer, apps }) {
                     {item.status === "pending" ? "แก้ไข draft" : "อัปเดตเวอร์ชัน"}
                   </Link>
                 )}
+                {item.inboxHref && (
+                  <Link href={item.inboxHref} className="btn-secondary btn-small">
+                    📥 กล่องรายงาน
+                  </Link>
+                )}
               </div>
             </li>
           ))}
@@ -112,6 +117,7 @@ function buildDashboardItems(developer, apps) {
         updated_at: pendingUpdate ? pendingUpdate.updated_at : a.updated_at,
         viewHref: `/app/${a.slug}`,
         editHref: `/dev/apps/${a.id}/edit`,
+        inboxHref: `/dev/apps/${a.id}/inbox`,
       };
     });
 
