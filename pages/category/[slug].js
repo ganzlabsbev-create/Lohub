@@ -8,6 +8,7 @@ import { useSearchIndex } from "../../lib/useSearchIndex";
 import { sortApps, SORT_OPTIONS } from "../../lib/sort";
 import { getSiteSettings } from "../../lib/site";
 import { getEffectiveCategories } from "../../lib/mockAdmin";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -19,11 +20,20 @@ export async function getStaticPaths() {
   return { paths: [], fallback: "blocking" };
 }
 
+// ป้ายชื่อตัวเลือกการเรียง — key ต้องตรงกับ value ใน lib/sort.js (SORT_OPTIONS)
+// แยกออกมาจาก lib/sort.js เพื่อให้ label แสดงผลได้ทั้ง 2 ภาษาโดยไม่แตะ logic การเรียงเดิม
+const SORT_LABEL_KEYS = {
+  popular: "category.sortPopular",
+  newest: "category.sortNewest",
+  name: "category.sortName",
+};
+
 export default function CategoryPage({ site }) {
   const router = useRouter();
   const { slug } = router.query;
   const { loading, error, data } = useSearchIndex();
   const [sortBy, setSortBy] = useState("popular");
+  const { t } = useTranslation();
 
   // ใช้หมวดหมู่ effective (รวม override ของ admin) ไม่งั้นแก้หมวดหมู่แล้วจะไม่ขึ้นหน้านี้
   const categories = data ? getEffectiveCategories(data.categories) : [];
@@ -36,16 +46,16 @@ export default function CategoryPage({ site }) {
 
   return (
     <Layout site={site}>
-      {loading && <StateMessage kind="loading">กำลังโหลดรายการแอป...</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("category.loading")}</StateMessage>}
       {error && (
         <StateMessage kind="error">
-          โหลดข้อมูลไม่สำเร็จ: {error} — ลองรีเฟรชหน้าใหม่อีกครั้ง
+          {t("category.loadError", { error })}
         </StateMessage>
       )}
 
       {data && !category && slug && (
         <StateMessage kind="empty">
-          ไม่พบหมวดหมู่ "{slug}" — <Link href="/">กลับหน้าแรก</Link>
+          {t("category.notFound", { slug })} <Link href="/">{t("category.backToHome")}</Link>
         </StateMessage>
       )}
 
@@ -55,25 +65,25 @@ export default function CategoryPage({ site }) {
             <span className="cat-header__icon" aria-hidden="true">{category.icon}</span>
             <div>
               <h1>{category.name}</h1>
-              <p>{appsInCategory.length} แอปในหมวดนี้</p>
+              <p>{t("category.appCount", { count: appsInCategory.length })}</p>
             </div>
           </section>
 
           <div className="sort-row">
-            <span>เรียงตาม:</span>
+            <span>{t("category.sortBy")}</span>
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 className={`sort-btn${sortBy === opt.value ? " sort-btn--active" : ""}`}
                 onClick={() => setSortBy(opt.value)}
               >
-                {opt.label}
+                {t(SORT_LABEL_KEYS[opt.value] || opt.label)}
               </button>
             ))}
           </div>
 
           {appsInCategory.length === 0 ? (
-            <StateMessage kind="empty">ยังไม่มีแอปในหมวดนี้ — กลับมาดูใหม่ภายหลัง</StateMessage>
+            <StateMessage kind="empty">{t("category.noApps")}</StateMessage>
           ) : (
             <div className="app-grid">
               {appsInCategory.map((app) => (
