@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap");
 
 /* =========================================================
    Design tokens
@@ -32,8 +32,14 @@
   --shadow-3: 0 14px 32px -12px rgba(16, 17, 20, 0.24), 0 4px 10px rgba(16, 17, 20, 0.06);
 
   --ease: cubic-bezier(0.2, 0, 0, 1);
+  /* ระบบฟอนต์: brand = Geist SemiBold (โลโก้/ชื่อแบรนด์), heading = Geist (หัวข้อ),
+     body = IBM Plex Sans Thai (เนื้อหาไทย), mono = IBM Plex Mono (โค้ด/App ID/Hash)
+     ทุกชุดมี fallback เป็น system font เผื่อโหลดฟอนต์เว็บไม่สำเร็จ */
+  --font-brand: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: "IBM Plex Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --weight-brand: 600;
 
   color-scheme: light;
 }
@@ -75,7 +81,7 @@ html, body {
 }
 
 h1, h2, h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-heading);
   font-weight: 700;
   margin: 0 0 0.35em;
   letter-spacing: -0.01em;
@@ -123,7 +129,8 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
+  font-family: var(--font-brand);
+  font-weight: var(--weight-brand);
   font-size: 1.05rem;
   letter-spacing: -0.01em;
   padding: 0 4px;
@@ -139,6 +146,11 @@ textarea:focus-visible {
   color: var(--surface);
   font-size: 0.95rem;
   flex-shrink: 0;
+}
+.masthead__mark--logo {
+  background: transparent;
+  object-fit: contain;
+  border-radius: 0;
 }
 .masthead__spacer { flex: 1; }
 
@@ -198,7 +210,7 @@ textarea:focus-visible {
   gap: 10px;
   padding: 6px 8px 14px;
 }
-.drawer__site-name { flex: 1; font-weight: 700; font-size: 1rem; }
+.drawer__site-name { flex: 1; font-family: var(--font-brand); font-weight: var(--weight-brand); font-size: 1rem; }
 .drawer__close { color: var(--surface); }
 .drawer__close:hover { background: rgba(255, 255, 255, 0.1); }
 
@@ -1080,3 +1092,34 @@ textarea:focus-visible {
 @media (max-width: 560px) {
   .account-head { flex-direction: column; text-align: center; }
 }
+
+/* ---------- Language switcher (TH/EN) ---------- */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-overlay);
+}
+.lang-switch__btn {
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  opacity: 0.65;
+  transition: background 0.15s var(--ease), opacity 0.15s var(--ease);
+}
+.lang-switch__btn:hover { opacity: 1; }
+.lang-switch__btn--active {
+  opacity: 1;
+  background: var(--ink);
+  color: var(--surface);
+}
+.drawer .lang-switch { background: rgba(255, 255, 255, 0.1); }
+.drawer .lang-switch__btn--active { background: var(--surface); color: var(--ink); }
+.drawer__lang-row { padding: 10px 8px 4px; }
