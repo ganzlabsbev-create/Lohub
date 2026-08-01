@@ -133,7 +133,109 @@ function ProfilePanel() {
         role === "member" && <DeveloperRequestPanel />
       )}
       {isAdmin && <AdminQuickLinks />}
+      <ReporterReportsPanel />
     </>
+  );
+}
+
+// Section "รายงานที่ฉันส่ง" — โชว์สถานะ + reply thread จาก dev ของรายงานที่ user คนนี้เคยส่งเอง
+// (ตอบกลับเพิ่มได้เพื่อคุยต่อกับ dev, เปลี่ยนสถานะไม่ได้ — ตามสเปก dev-report-inbox)
+function ReporterReportsPanel() {
+  const [state, setState] = useState({ loading: true, error: null, reports: null });
+  const { t } = useTranslation();
+
+  function load() {
+    setState((s) => ({ ...s, loading: true, error: null }));
+    apiGet("/api/account/reports")
+      .then((data) => setState({ loading: false, error: null, reports: data.reports || [] }))
+      .catch((err) => setState({ loading: false, error: err.message, reports: null }));
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const { loading, error, reports } = state;
+
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h2>{t("account.myReportsTitle")}</h2>
+      </div>
+
+      {loading && <StateMessage kind="loading">{t("account.myReportsLoading")}</StateMessage>}
+      {error && <StateMessage kind="error">{t("account.myReportsError", { error })}</StateMessage>}
+      {reports && reports.length === 0 && <StateMessage kind="empty">{t("account.myReportsEmpty")}</StateMessage>}
+
+      {reports && reports.length > 0 && (
+        <ul className="dev-list">
+          {reports.map((r) => (
+            <MyReportRow key={r.id} report={r} onChanged={load} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MyReportRow({ report, onChanged }) {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const { t } = useTranslation();
+
+  function sendReply(e) {
+    e.preventDefault();
+    if (!message.trim()) return;
+    setBusy(true);
+    setError("");
+    apiPost(`/api/account/reports/${report.id}/reply`, { message })
+      .then(() => {
+        setMessage("");
+        onChanged();
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setBusy(false));
+  }
+
+  return (
+    <li className="dev-row" style={{ flexDirection: "column", alignItems: "stretch" }}>
+      <div className="dev-row__body">
+        <p className="dev-row__meta mono">
+          {report.app_id} · {formatDate(report.created_at)} · {t(`devInbox.status${report.status?.charAt(0).toUpperCase()}${report.status?.slice(1)}`)}
+        </p>
+        <p className="dev-row__text">{report.message}</p>
+      </div>
+
+      {report.replies && report.replies.length > 0 && (
+        <ul className="dev-row__thread">
+          {report.replies.map((rep) => (
+            <li key={rep.id} className="dev-row__thread-item">
+              <strong>
+                {rep.author_role === "developer" ? t("adminReports.fromDeveloper") : t("adminReports.fromReporter")} @{rep.author_username}
+              </strong>{" "}
+              <span className="mono">{formatDate(rep.created_at)}</span>
+              <p>{rep.message}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form onSubmit={sendReply} className="form-actions" style={{ gap: 8 }}>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={t("devInbox.replyPlaceholder")}
+          style={{ flex: 1 }}
+          disabled={busy}
+        />
+        <button type="submit" className="btn-secondary btn-small" disabled={busy || !message.trim()}>
+          {t("devInbox.sendReply")}
+        </button>
+      </form>
+      {error && <span className="field-error">{error}</span>}
+    </li>
   );
 }
 
