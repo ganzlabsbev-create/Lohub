@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "../../../../components/Layout";
@@ -15,6 +15,7 @@ import {
   setMockAppUpdate,
 } from "../../../../lib/mockAuth";
 import { getMockApprovedApp } from "../../../../lib/mockAdmin";
+import { useTranslation } from "../../../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -30,15 +31,16 @@ export default function EditAppPage({ site }) {
   const router = useRouter();
   const { id } = router.query;
   const { loading, error, data } = useSearchIndex();
+  const { t } = useTranslation();
 
   return (
     <Layout site={site}>
       <section className="section dev-narrow">
         <div className="section__head">
-          <h1>แก้ไข / อัปเวอร์ชันแอป</h1>
+          <h1>{t("devEdit.title")}</h1>
         </div>
-        {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-        {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
+        {loading && <StateMessage kind="loading">{t("devEdit.loading")}</StateMessage>}
+        {error && <StateMessage kind="error">{t("devEdit.loadError", { error })}</StateMessage>}
         {data && id && (
           <DevGuard developers={data.developers}>
             {(developer) => <EditAppBody developer={developer} apps={data.apps} appId={id} />}
@@ -50,6 +52,7 @@ export default function EditAppPage({ site }) {
 }
 
 function EditAppBody({ developer, apps, appId }) {
+  const { t } = useTranslation();
   // แหล่งข้อมูล: แอปที่ผ่านแล้ว (search-index จริง หรือ admin mock-อนุมัติใน Part 8) มาก่อน,
   // ถ้าไม่เจอลองหา draft ที่ยัง pending
   const published = apps.find((a) => a.id === appId) || getMockApprovedApp(appId);
@@ -66,8 +69,8 @@ function EditAppBody({ developer, apps, appId }) {
   if (!app || app.developer_id !== developer.id) {
     return (
       <StateMessage kind="empty">
-        ไม่พบแอปนี้ หรือคุณไม่มีสิทธิ์แก้ไข —{" "}
-        <Link href="/dev/dashboard">กลับไป Dashboard</Link>
+        {t("devEdit.notFound")}{" "}
+        <Link href="/dev/dashboard">{t("devEdit.backToDashboard")}</Link>
       </StateMessage>
     );
   }
@@ -90,6 +93,7 @@ function EditAppBody({ developer, apps, appId }) {
 function VersionForm({ app, isPublished, onSaved }) {
   const primaryMethod = app.install_methods.find((m) => m.primary) || app.install_methods[0];
   const isApk = primaryMethod?.type === "apk";
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({
     version: app.current_version,
@@ -149,20 +153,16 @@ function VersionForm({ app, isPublished, onSaved }) {
     return (
       <div className="submit-success">
         <p className="banner-note banner-note--ok">
-          ✅ บันทึกแล้ว! (สถานะ: {isPublished ? "รอตรวจอัปเดต" : "รอตรวจ (แก้ไขแล้ว)"})
+          {t("devEdit.savedBanner", { status: isPublished ? t("devEdit.statusUpdatePending") : t("devEdit.statusEditedPending") })}
         </p>
-        <p>
-          {isPublished
-            ? "ขั้นตอนต่อไป (ทำระบบจริงใน Part 10): อัปเดตนี้จะกลายเป็น PR แก้ไข data/apps/{id}.json ตอนนี้เก็บไว้ในเครื่องนี้ก่อน — คัดลอก JSON ด้านล่างไปใช้ต่อได้"
-            : "แก้ไข draft ที่ยังรอตรวจนี้เรียบร้อย — ดูสถานะทั้งหมดได้ที่ Dashboard"}
-        </p>
+        <p>{isPublished ? t("devEdit.nextStepsPublished") : t("devEdit.nextStepsDraft")}</p>
         <pre className="json-preview">{JSON.stringify(saved, null, 2)}</pre>
         <div className="form-actions">
           <button type="button" className="btn-primary" onClick={copyJson}>
-            {copied ? "คัดลอกแล้ว ✓" : "คัดลอก JSON"}
+            {copied ? t("devEdit.copied") : t("devEdit.copyJson")}
           </button>
           <Link href="/dev/dashboard" className="btn-secondary">
-            กลับไป Dashboard
+            {t("devEdit.backToDashboard")}
           </Link>
         </div>
       </div>
@@ -172,11 +172,11 @@ function VersionForm({ app, isPublished, onSaved }) {
   return (
     <form className="dev-form" onSubmit={handleSubmit} noValidate>
       <p className="banner-note">
-        กำลังแก้ไข: <strong>{app.name}</strong> · เวอร์ชันปัจจุบัน{" "}
+        {t("devEdit.editingPrefix")} <strong>{app.name}</strong> {t("devEdit.currentVersionMid")}{" "}
         <span className="mono">v{app.current_version}</span>
       </p>
 
-      <Field label="เวอร์ชันใหม่" error={errors.version}>
+      <Field label={t("devEdit.newVersion")} error={errors.version}>
         <input
           className="mono"
           value={form.version}
@@ -185,16 +185,16 @@ function VersionForm({ app, isPublished, onSaved }) {
         />
       </Field>
 
-      <Field label="โน้ตเวอร์ชันนี้ (มีอะไรเปลี่ยนแปลง)" error={errors.note}>
+      <Field label={t("devEdit.versionNote")} error={errors.note}>
         <textarea rows={3} value={form.note} onChange={(e) => update("note", e.target.value)} />
       </Field>
 
       {isApk ? (
         <>
-          <Field label="ลิงก์ไฟล์ APK เวอร์ชันใหม่" error={errors.apk_url}>
+          <Field label={t("devEdit.newApkUrl")} error={errors.apk_url}>
             <input value={form.apk_url} onChange={(e) => update("apk_url", e.target.value)} />
           </Field>
-          <Field label="ขนาดไฟล์ (MB)" error={errors.size_mb}>
+          <Field label={t("devEdit.sizeMb")} error={errors.size_mb}>
             <input
               type="number"
               step="0.1"
@@ -204,21 +204,17 @@ function VersionForm({ app, isPublished, onSaved }) {
           </Field>
         </>
       ) : (
-        <Field label="ลิงก์ใหม่ (ไม่บังคับ ถ้ายังใช้ลิงก์เดิม เว้นว่างไว้ได้)" error={errors.apk_url}>
+        <Field label={t("devEdit.newUrlOptional")} error={errors.apk_url}>
           <input value={form.apk_url} onChange={(e) => update("apk_url", e.target.value)} />
         </Field>
       )}
 
       <p className="section__hint">
-        {isPublished
-          ? "การอัปเวอร์ชันแอปที่ผ่านแล้วจะเพิ่มรายการใหม่เข้า version_history (ประวัติเก่ายังอยู่ครบ)"
-          : "แอปนี้ยังไม่ผ่านการตรวจ — การแก้ไขจะแทนที่ข้อมูลเวอร์ชันเดิมในคิวรอตรวจ ไม่ได้สะสมเป็นประวัติ"}
+        {isPublished ? t("devEdit.hintPublished") : t("devEdit.hintDraft")}
       </p>
 
-      <FieldGroup label="ลิงก์เว็บเพิ่มเติม (ไม่บังคับ)">
-        <p className="section__hint">
-          เผื่อว่านอกจากวิธีติดตั้งหลักแล้ว ยังมีเว็บให้ใช้งานก่อนก็ได้ — ใส่ชื่อลิงก์และ URL ได้กี่รายการก็ได้
-        </p>
+      <FieldGroup label={t("devEdit.extraLinks")}>
+        <p className="section__hint">{t("devEdit.extraLinksHint")}</p>
         <div className="link-list">
           {extraLinks.map((link, i) => (
             <div className="link-row" key={i}>
@@ -226,7 +222,7 @@ function VersionForm({ app, isPublished, onSaved }) {
                 className="link-row__name"
                 value={link.name}
                 onChange={(e) => updateExtraLink(i, "name", e.target.value)}
-                placeholder="ชื่อลิงก์ เช่น ใช้บนเว็บ"
+                placeholder={t("devEdit.extraLinkNamePlaceholder")}
               />
               <input
                 className="link-row__url"
@@ -238,7 +234,7 @@ function VersionForm({ app, isPublished, onSaved }) {
                 type="button"
                 className="link-row__remove"
                 onClick={() => removeExtraLink(i)}
-                aria-label="ลบลิงก์นี้"
+                aria-label={t("devEdit.removeLink")}
               >
                 <IconClose size={16} />
               </button>
@@ -251,15 +247,15 @@ function VersionForm({ app, isPublished, onSaved }) {
           ))}
         </div>
         <button type="button" className="btn-secondary btn-small" onClick={addExtraLink}>
-          ➕ เพิ่มลิงก์
+          {t("devEdit.addLink")}
         </button>
       </FieldGroup>
 
       <div className="form-actions">
         <button type="submit" className="btn-primary">
-          บันทึก
+          {t("devEdit.save")}
         </button>
-        <Link href="/dev/dashboard">ยกเลิก</Link>
+        <Link href="/dev/dashboard">{t("devEdit.cancel")}</Link>
       </div>
     </form>
   );
