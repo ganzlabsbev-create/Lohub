@@ -6,6 +6,7 @@ import { useSession, signIn } from "next-auth/react";
 import SideDrawer from "./SideDrawer";
 import BottomNav from "./BottomNav";
 import BrandMark from "./BrandMark";
+import NotificationBell from "./NotificationBell";
 import { IconMenu, IconSearch, IconUser } from "./Icons";
 import { useTranslation } from "../lib/i18n";
 
@@ -79,6 +80,7 @@ export default function Layout({ site, children }) {
             <Link href="/search" className="icon-btn" aria-label={t("nav.search")} title={t("nav.search")}>
               <IconSearch size={19} />
             </Link>
+            <NotificationBell />
             <AuthButton />
           </div>
         </div>

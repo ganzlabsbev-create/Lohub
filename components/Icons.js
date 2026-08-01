@@ -22,6 +22,7 @@ import {
   Code2,
   Image as ImageIcon,
   LogOut,
+  Bell,
 } from "lucide-react";
 
 const DEFAULT_PROPS = { size: 20, strokeWidth: 1.8 };
@@ -50,3 +51,4 @@ export const IconExternal = withDefaults(ExternalLink);
 export const IconCode = withDefaults(Code2);
 export const IconImage = withDefaults(ImageIcon);
 export const IconLogout = withDefaults(LogOut);
+export const IconBell = withDefaults(Bell);
