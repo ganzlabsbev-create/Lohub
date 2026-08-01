@@ -230,7 +230,11 @@
     "loadingRequestStatus": "กำลังโหลดสถานะคำขอ...",
     "loadRequestError": "โหลดสถานะไม่สำเร็จ: {{error}}",
     "loadingDevProfile": "กำลังโหลดโปรไฟล์นักพัฒนา...",
-    "loadDevProfileError": "โหลดข้อมูลนักพัฒนาไม่สำเร็จ: {{error}}"
+    "loadDevProfileError": "โหลดข้อมูลนักพัฒนาไม่สำเร็จ: {{error}}",
+    "myReportsTitle": "รายงานที่ฉันส่ง",
+    "myReportsLoading": "กำลังโหลดรายงานของคุณ...",
+    "myReportsError": "โหลดข้อมูลไม่สำเร็จ: {{error}}",
+    "myReportsEmpty": "คุณยังไม่เคยส่งรายงานปัญหา"
   },
   "accountSettings": {
     "title": "ตั้งค่า",
@@ -435,7 +439,14 @@
     "statusResolved": "แก้ไขแล้ว",
     "typeBug": "แอปมีปัญหา",
     "typeContent": "ข้อมูลไม่ถูกต้อง",
-    "typeOther": "อื่นๆ"
+    "typeOther": "อื่นๆ",
+    "statusReplied": "ตอบแล้ว",
+    "statusClosed": "ปิดเคสแล้ว",
+    "readOnlyNote": "ดูข้อมูลอย่างเดียว — การตอบกลับ/เปลี่ยนสถานะทำได้เฉพาะ developer เจ้าของแอปที่หน้ากล่องข้อความของแอปนั้น",
+    "showThread": "ดูการตอบกลับ ({{count}})",
+    "hideThread": "ซ่อนการตอบกลับ",
+    "fromDeveloper": "นักพัฒนา",
+    "fromReporter": "ผู้รายงาน"
   },
   "adminReviews": {
     "title": "จัดการรีวิว",
@@ -470,5 +481,26 @@
     "roleChangedNoFile": "role เปลี่ยนเป็น developer แล้ว แต่สร้างไฟล์/PR อัตโนมัติไม่สำเร็จ: {{error}} — ลองกด \"อนุมัติ\" ซ้ำอีกครั้ง หรือเพิ่มไฟล์ data/developers/{id}.json เองผ่าน GitHub",
     "approve": "อนุมัติ",
     "reject": "ปฏิเสธ"
+  },
+  "notifications": {
+    "bellLabel": "การแจ้งเตือน ({{count}} ยังไม่อ่าน)",
+    "title": "แจ้งเตือนล่าสุด",
+    "empty": "ยังไม่มีรายงานใหม่",
+    "viewDashboard": "ไปที่ dashboard นักพัฒนา"
+  },
+  "devInbox": {
+    "title": "กล่องข้อความรายงานปัญหา — {{app}}",
+    "notOwner": "คุณไม่ใช่เจ้าของแอปนี้ หรือไม่พบแอปนี้",
+    "filterLabel": "กรองตามสถานะ",
+    "filterAll": "ทั้งหมด",
+    "statusOpen": "เปิดอยู่",
+    "statusReplied": "ตอบแล้ว",
+    "statusResolved": "แก้ไขแล้ว",
+    "statusClosed": "ปิดเคสแล้ว",
+    "loading": "กำลังโหลดรายงาน...",
+    "loadError": "โหลดข้อมูลไม่สำเร็จ: {{error}}",
+    "empty": "ยังไม่มีรายงานในสถานะนี้",
+    "replyPlaceholder": "พิมพ์คำตอบ...",
+    "sendReply": "ส่งคำตอบ"
   }
 }

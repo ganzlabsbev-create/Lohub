@@ -230,7 +230,11 @@
     "loadingRequestStatus": "Loading request status...",
     "loadRequestError": "Couldn't load status: {{error}}",
     "loadingDevProfile": "Loading developer profile...",
-    "loadDevProfileError": "Couldn't load developer info: {{error}}"
+    "loadDevProfileError": "Couldn't load developer info: {{error}}",
+    "myReportsTitle": "Reports I sent",
+    "myReportsLoading": "Loading your reports...",
+    "myReportsError": "Failed to load: {{error}}",
+    "myReportsEmpty": "You have not sent any reports yet."
   },
   "accountSettings": {
     "title": "Settings",
@@ -435,7 +439,14 @@
     "statusResolved": "Resolved",
     "typeBug": "App is broken",
     "typeContent": "Incorrect information",
-    "typeOther": "Other"
+    "typeOther": "Other",
+    "statusReplied": "Replied",
+    "statusClosed": "Closed",
+    "readOnlyNote": "Read-only — replying or changing status is only available to the app's owning developer in that app's report inbox.",
+    "showThread": "Show replies ({{count}})",
+    "hideThread": "Hide replies",
+    "fromDeveloper": "Developer",
+    "fromReporter": "Reporter"
   },
   "adminReviews": {
     "title": "Manage reviews",
@@ -470,5 +481,26 @@
     "roleChangedNoFile": "Role changed to developer, but creating the file/PR automatically failed: {{error}} — try clicking \"Approve\" again, or add the file data/developers/{id}.json yourself via GitHub",
     "approve": "Approve",
     "reject": "Reject"
+  },
+  "notifications": {
+    "bellLabel": "Notifications ({{count}} unread)",
+    "title": "Latest notifications",
+    "empty": "No new reports",
+    "viewDashboard": "Go to developer dashboard"
+  },
+  "devInbox": {
+    "title": "Report inbox — {{app}}",
+    "notOwner": "You do not own this app, or it was not found.",
+    "filterLabel": "Filter by status",
+    "filterAll": "All",
+    "statusOpen": "Open",
+    "statusReplied": "Replied",
+    "statusResolved": "Resolved",
+    "statusClosed": "Closed",
+    "loading": "Loading reports...",
+    "loadError": "Failed to load: {{error}}",
+    "empty": "No reports with this status",
+    "replyPlaceholder": "Type a reply...",
+    "sendReply": "Send reply"
   }
 }
