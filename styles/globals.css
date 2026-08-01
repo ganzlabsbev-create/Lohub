@@ -173,6 +173,62 @@ textarea:focus-visible {
 .icon-btn--active { color: var(--surface); background: var(--ink); }
 .icon-btn--active:hover { background: var(--ink); opacity: 0.85; }
 
+/* ---------- Notification bell (dev report inbox) ---------- */
+.notif-bell { position: relative; }
+.notif-bell__badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger, #d64545);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  font-weight: 600;
+}
+.notif-bell__dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  width: 300px;
+  max-width: 88vw;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e2e2e6);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(10, 10, 12, 0.16);
+  padding: 12px;
+  z-index: 60;
+}
+.notif-bell__title { font-weight: 600; margin: 0 0 8px; font-size: 0.9rem; }
+.notif-bell__list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.notif-bell__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+.notif-bell__item:hover { background: var(--surface-overlay); }
+.notif-bell__item span { font-size: 0.82rem; color: var(--ink-muted, #666); }
+.notif-bell__time { font-size: 0.72rem !important; }
+.notif-bell__viewall {
+  display: block;
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border, #e2e2e6);
+  font-size: 0.85rem;
+}
+
 /* ---------- Side drawer (hamburger menu) ---------- */
 .drawer-overlay {
   position: fixed;
@@ -1076,6 +1132,19 @@ textarea:focus-visible {
 /* dev-row ถูกออกแบบไว้ให้ใช้ซ้ำกับหน้า admin ใหม่ทุกหน้า (สมาชิก/รีวิว/รายงาน/คำขอ developer)
    .dev-row__text คือ class ใหม่สำหรับ comment/message/portfolio ที่ไม่ใช่ name/meta (กัน margin ชนของเดิม) */
 .dev-row__text { margin: 6px 0 0; font-size: 0.88rem; }
+
+/* ---------- Report reply threads (dev inbox / admin reports / account) ---------- */
+.dev-row__thread {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--outline);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dev-row__thread-item p { margin: 2px 0 0; font-size: 0.85rem; }
+.dev-row__thread-item strong { font-size: 0.82rem; }
 .dev-row__actions select {
   padding: 8px 10px;
   border: 1px solid var(--outline);
