@@ -25,10 +25,26 @@ function Shot({ shot }) {
   );
 }
 
+function normalizeShot(shot, index) {
+  // Support plain string paths, e.g. "/assets/screenshots/app_0001-01.png"
+  if (typeof shot === "string") {
+    return { id: `shot-${index}`, order: index, url: shot, caption: "" };
+  }
+  // Support object entries, filling in sensible defaults for missing fields
+  return {
+    id: shot.id ?? `shot-${index}`,
+    order: shot.order ?? index,
+    url: shot.url ?? shot.path ?? "",
+    caption: shot.caption ?? "",
+  };
+}
+
 export default function ScreenshotGallery({ screenshots }) {
   const { t } = useTranslation();
   if (!screenshots || screenshots.length === 0) return null;
-  const sorted = [...screenshots].sort((a, b) => a.order - b.order);
+  const sorted = screenshots
+    .map(normalizeShot)
+    .sort((a, b) => a.order - b.order);
 
   return (
     <section className="section">
