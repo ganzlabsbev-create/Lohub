@@ -7,6 +7,7 @@ import { useSearchIndex } from "../lib/useSearchIndex";
 import { searchApps } from "../lib/search";
 import { getSiteSettings } from "../lib/site";
 import { getEffectiveCategories } from "../lib/mockAdmin";
+import { useTranslation } from "../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -17,6 +18,7 @@ export default function SearchPage({ site }) {
   const { loading, error, data } = useSearchIndex();
   const [query, setQuery] = useState("");
   const [ready, setReady] = useState(false);
+  const { t } = useTranslation();
 
   // เติมค่าเริ่มต้นจาก ?q= ใน URL (ทำให้แชร์ลิงก์ผลค้นหาได้)
   useEffect(() => {
@@ -46,35 +48,35 @@ export default function SearchPage({ site }) {
   return (
     <Layout site={site}>
       <section className="search-head">
-        <h1>ค้นหาแอป</h1>
+        <h1>{t("search.title")}</h1>
         <input
           type="search"
           className="search-input"
-          placeholder="ค้นชื่อแอป, นักพัฒนา, หมวดหมู่ หรือฟีเจอร์..."
+          placeholder={t("search.placeholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
         />
       </section>
 
-      {loading && <StateMessage kind="loading">กำลังโหลดฐานข้อมูลแอป...</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("search.loading")}</StateMessage>}
       {error && (
         <StateMessage kind="error">
-          โหลดข้อมูลไม่สำเร็จ: {error} — ลองรีเฟรชหน้าใหม่อีกครั้ง
+          {t("search.loadError", { error })}
         </StateMessage>
       )}
 
       {data && ready && (
         <>
           {query.trim() === "" && (
-            <StateMessage kind="empty">พิมพ์คำค้นด้านบนเพื่อเริ่มค้นหา</StateMessage>
+            <StateMessage kind="empty">{t("search.startTyping")}</StateMessage>
           )}
           {query.trim() !== "" && results.length === 0 && (
-            <StateMessage kind="empty">ไม่พบแอปที่ตรงกับ "{query}"</StateMessage>
+            <StateMessage kind="empty">{t("search.noResults", { query })}</StateMessage>
           )}
           {results.length > 0 && (
             <>
-              <p className="search-count">พบ {results.length} แอป</p>
+              <p className="search-count">{t("search.resultsCount", { count: results.length })}</p>
               <div className="app-grid">
                 {results.map((app) => (
                   <AppCard key={app.id} app={app} categories={categories} />

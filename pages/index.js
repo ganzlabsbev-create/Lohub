@@ -8,6 +8,7 @@ import { useSearchIndex } from "../lib/useSearchIndex";
 import { sortApps } from "../lib/sort";
 import { getSiteSettings } from "../lib/site";
 import { getEffectiveCategories } from "../lib/mockAdmin";
+import { useTranslation } from "../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -15,6 +16,7 @@ export async function getStaticProps() {
 
 export default function Home({ site }) {
   const { loading, error, data } = useSearchIndex();
+  const { t } = useTranslation();
   // ใช้หมวดหมู่ "effective" (รวม override ที่ admin แก้ไว้) ไม่ใช่ data.categories ตรงๆ
   // ไม่งั้นแอดมินแก้หมวดหมู่แล้วจะเห็นผลแค่ในหน้า /admin/categories เท่านั้น ไม่ขึ้นหน้าหลัก
   const categories = data ? getEffectiveCategories(data.categories) : [];
@@ -22,18 +24,18 @@ export default function Home({ site }) {
   return (
     <Layout site={site}>
       <section className="hero">
-        <h1>ค้นแอปที่ใช่ ติดตั้งได้เลย</h1>
-        <p>รวมแอปจากนักพัฒนาอิสระ ทุกตัวผ่านการตรวจสอบแล้ว</p>
-        <Link href="/search" className="searchbar" aria-label="ค้นหาแอป">
+        <h1>{t("home.heroTitle")}</h1>
+        <p>{t("home.heroSubtitle")}</p>
+        <Link href="/search" className="searchbar" aria-label={t("home.searchAriaLabel")}>
           <span className="searchbar__icon" aria-hidden="true"><IconSearch size={18} /></span>
-          ค้นหาแอปและนักพัฒนา
+          {t("home.searchCta")}
         </Link>
       </section>
 
-      {loading && <StateMessage kind="loading">กำลังโหลดรายการแอป...</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("home.loadingApps")}</StateMessage>}
       {error && (
         <StateMessage kind="error">
-          โหลดข้อมูลไม่สำเร็จ: {error} — ลองรีเฟรชหน้าใหม่อีกครั้ง
+          {t("home.loadError", { error })}
         </StateMessage>
       )}
 
@@ -41,7 +43,7 @@ export default function Home({ site }) {
         <>
           <section className="section" id="categories">
             <div className="section__head">
-              <h2>หมวดหมู่</h2>
+              <h2>{t("home.categoriesTitle")}</h2>
             </div>
             <div className="cat-row">
               {[...categories]
@@ -62,13 +64,14 @@ export default function Home({ site }) {
 }
 
 function FeaturedSection({ apps, categories }) {
+  const { t } = useTranslation();
   const featured = sortApps(apps, "popular").slice(0, 3);
   if (featured.length === 0) return null;
   return (
     <section className="section">
       <div className="section__head">
-        <h2>แอปแนะนำ</h2>
-        <p className="section__hint">คัดจากแอปที่ผ่านการยืนยันตัวตนและได้รับความนิยม</p>
+        <h2>{t("home.featuredTitle")}</h2>
+        <p className="section__hint">{t("home.featuredHint")}</p>
       </div>
       <div className="app-grid">
         {featured.map((app) => (
@@ -80,13 +83,14 @@ function FeaturedSection({ apps, categories }) {
 }
 
 function RecommendedSection({ apps, categories }) {
+  const { t } = useTranslation();
   // ต่อจากแอปแนะนำ (popular) แถวถัดไป — ใช้ sortApps เดิม ไม่มี logic ใหม่
   const recommended = sortApps(apps, "popular").slice(3, 7);
   if (recommended.length === 0) return null;
   return (
     <section className="section">
       <div className="section__head">
-        <h2>แนะนำสำหรับคุณ</h2>
+        <h2>{t("home.recommendedTitle")}</h2>
       </div>
       <div className="app-grid">
         {recommended.map((app) => (
@@ -98,13 +102,14 @@ function RecommendedSection({ apps, categories }) {
 }
 
 function NewestSection({ apps, categories }) {
+  const { t } = useTranslation();
   const newest = sortApps(apps, "newest").slice(0, 4);
   if (newest.length === 0) return null;
   return (
     <section className="section">
       <div className="section__head">
-        <h2>แอปใหม่</h2>
-        <p className="section__hint">เพิ่งผ่านการอนุมัติขึ้นเว็บล่าสุด</p>
+        <h2>{t("home.newestTitle")}</h2>
+        <p className="section__hint">{t("home.newestHint")}</p>
       </div>
       <div className="app-grid">
         {newest.map((app) => (
