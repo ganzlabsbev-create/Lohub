@@ -9,6 +9,7 @@ import { sortApps } from "../../lib/sort";
 import { formatDate } from "../../lib/format";
 import { getSiteSettings } from "../../lib/site";
 import { getEffectiveCategories } from "../../lib/mockAdmin";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -23,6 +24,7 @@ export default function DeveloperPage({ site }) {
   const router = useRouter();
   const { id } = router.query;
   const { loading, error, data } = useSearchIndex();
+  const { t } = useTranslation();
 
   const developer = data?.developers.find((d) => d.id === id);
   const apps = developer
@@ -33,23 +35,23 @@ export default function DeveloperPage({ site }) {
 
   return (
     <Layout site={site}>
-      {loading && <StateMessage kind="loading">กำลังโหลดข้อมูลนักพัฒนา...</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("developer.loading")}</StateMessage>}
       {error && (
         <StateMessage kind="error">
-          โหลดข้อมูลไม่สำเร็จ: {error} — ลองรีเฟรชหน้าใหม่อีกครั้ง
+          {t("developer.loadError", { error })}
         </StateMessage>
       )}
 
       {data && !developer && id && (
         <StateMessage kind="empty">
-          ไม่พบนักพัฒนา — <Link href="/">กลับหน้าแรก</Link>
+          {t("developer.notFound")} <Link href="/">{t("developer.backToHome")}</Link>
         </StateMessage>
       )}
 
       {developer && (
         <>
           <p className="breadcrumb">
-            <Link href="/">หน้าแรก</Link> {" › "}
+            <Link href="/">{t("developer.breadcrumbHome")}</Link> {" › "}
             <span>{developer.name}</span>
           </p>
 
@@ -59,16 +61,16 @@ export default function DeveloperPage({ site }) {
               <h1>
                 {developer.name}
                 {developer.verified && (
-                  <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">✓ verified</span>
+                  <span className="stamp stamp--inline" title={t("common.verified")}>✓ verified</span>
                 )}
               </h1>
               <p className="dev-head__meta">
-                เข้าร่วมเมื่อ {formatDate(developer.joined_at)} · {apps.length} แอป
+                {t("developer.joinedOn", { date: formatDate(developer.joined_at), count: apps.length })}
               </p>
               <div className="dev-head__links">
                 {developer.website && (
                   <a href={developer.website} target="_blank" rel="noopener noreferrer">
-                    🔗 เว็บไซต์
+                    {t("developer.website")}
                   </a>
                 )}
                 {developer.github_username && (
@@ -86,10 +88,10 @@ export default function DeveloperPage({ site }) {
 
           <section className="section">
             <div className="section__head">
-              <h2>แอปทั้งหมดจากนักพัฒนานี้</h2>
+              <h2>{t("developer.appsTitle")}</h2>
             </div>
             {apps.length === 0 ? (
-              <StateMessage kind="empty">นักพัฒนาคนนี้ยังไม่มีแอปที่เผยแพร่</StateMessage>
+              <StateMessage kind="empty">{t("developer.noApps")}</StateMessage>
             ) : (
               <div className="app-grid">
                 {apps.map((app) => (
