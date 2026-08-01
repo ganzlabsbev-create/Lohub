@@ -13,6 +13,9 @@ import {
   IconLogout,
   IconChevronDown,
 } from "./Icons";
+import BrandMark from "./BrandMark";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "../lib/i18n";
 
 function DrawerLink({ href, icon, children, onNavigate }) {
   return (
@@ -50,6 +53,7 @@ function DrawerGroup({ icon, label, children, defaultOpen = false }) {
 function DrawerProfile({ onNavigate }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
 
   if (status === "loading") return null;
 
@@ -58,8 +62,8 @@ function DrawerProfile({ onNavigate }) {
       <button type="button" className="drawer__profile" onClick={() => signIn("github")}>
         <span className="drawer__avatar"><IconUser size={18} /></span>
         <div className="drawer__profile-text">
-          <strong>เข้าสู่ระบบ</strong>
-          <span>ด้วยบัญชี GitHub</span>
+          <strong>{t("nav.login")}</strong>
+          <span>{t("nav.loginWithGithubAccount")}</span>
         </div>
       </button>
     );
@@ -76,15 +80,15 @@ function DrawerProfile({ onNavigate }) {
         <span className="drawer__avatar"><IconUser size={18} /></span>
         <div className="drawer__profile-text">
           <strong>{session.user?.login}</strong>
-          <span>ดูโปรไฟล์ของฉัน</span>
+          <span>{t("nav.viewProfile")}</span>
         </div>
       </button>
       <button
         type="button"
         className="icon-btn drawer__logout"
         onClick={() => signOut()}
-        aria-label="ออกจากระบบ"
-        title="ออกจากระบบ"
+        aria-label={t("nav.logout")}
+        title={t("nav.logout")}
       >
         <IconLogout size={18} />
       </button>
@@ -93,6 +97,8 @@ function DrawerProfile({ onNavigate }) {
 }
 
 export default function SideDrawer({ site, open, onClose }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <div
@@ -100,11 +106,11 @@ export default function SideDrawer({ site, open, onClose }) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <aside className={`drawer${open ? " drawer--open" : ""}`} aria-label="เมนูหลัก" aria-hidden={!open}>
+      <aside className={`drawer${open ? " drawer--open" : ""}`} aria-label={t("nav.mainMenu")} aria-hidden={!open}>
         <div className="drawer__head">
-          <span className="masthead__mark">▣</span>
+          <BrandMark size={20} />
           <span className="drawer__site-name">{site.site_name}</span>
-          <button type="button" className="icon-btn drawer__close" onClick={onClose} aria-label="ปิดเมนู">
+          <button type="button" className="icon-btn drawer__close" onClick={onClose} aria-label={t("nav.closeMenu")}>
             <IconClose size={20} />
           </button>
         </div>
@@ -112,17 +118,22 @@ export default function SideDrawer({ site, open, onClose }) {
         <DrawerProfile onNavigate={onClose} />
 
         <nav className="drawer__nav">
-          <DrawerLink href="/" icon={<IconHome size={19} />} onNavigate={onClose}>หน้าแรก</DrawerLink>
-          <DrawerLink href="/#categories" icon={<IconGrid size={19} />} onNavigate={onClose}>หมวดหมู่</DrawerLink>
-          <DrawerLink href="/search" icon={<IconSearch size={19} />} onNavigate={onClose}>ค้นหา</DrawerLink>
+          <DrawerLink href="/" icon={<IconHome size={19} />} onNavigate={onClose}>{t("nav.home")}</DrawerLink>
+          <DrawerLink href="/#categories" icon={<IconGrid size={19} />} onNavigate={onClose}>{t("nav.categories")}</DrawerLink>
+          <DrawerLink href="/search" icon={<IconSearch size={19} />} onNavigate={onClose}>{t("nav.search")}</DrawerLink>
 
           <div className="drawer__divider" />
 
-          <DrawerLink href="/account/settings" icon={<IconSettings size={19} />} onNavigate={onClose}>ตั้งค่า</DrawerLink>
+          <DrawerLink href="/account/settings" icon={<IconSettings size={19} />} onNavigate={onClose}>{t("nav.settings")}</DrawerLink>
 
-          <DrawerGroup icon={<IconInfo size={19} />} label="เกี่ยวกับ">
+          <DrawerGroup icon={<IconInfo size={19} />} label={t("nav.about")}>
             <p className="drawer__about-text">{site.tagline}</p>
           </DrawerGroup>
+
+          <div className="drawer__divider" />
+          <div className="drawer__lang-row">
+            <LanguageSwitcher />
+          </div>
         </nav>
       </aside>
     </>

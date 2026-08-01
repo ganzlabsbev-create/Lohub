@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IconImage } from "./Icons";
+import { useTranslation } from "../lib/i18n";
 
 function Shot({ shot }) {
   const [broken, setBroken] = useState(false);
@@ -25,13 +26,14 @@ function Shot({ shot }) {
 }
 
 export default function ScreenshotGallery({ screenshots }) {
+  const { t } = useTranslation();
   if (!screenshots || screenshots.length === 0) return null;
   const sorted = [...screenshots].sort((a, b) => a.order - b.order);
 
   return (
     <section className="section">
       <div className="section__head">
-        <h2>ภาพตัวอย่าง</h2>
+        <h2>{t("screenshotGallery.title")}</h2>
       </div>
       <div className="shot-row">
         {sorted.map((shot) => (

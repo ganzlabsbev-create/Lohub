@@ -5,7 +5,9 @@ import { useRouter } from "next/router";
 import { useSession, signIn } from "next-auth/react";
 import SideDrawer from "./SideDrawer";
 import BottomNav from "./BottomNav";
+import BrandMark from "./BrandMark";
 import { IconMenu, IconSearch, IconUser } from "./Icons";
+import { useTranslation } from "../lib/i18n";
 
 // ปุ่มสถานะ login แบบย่อ (ไอคอนกลม มุมขวาบน) — Part 10
 // บั๊กเดิม: login แล้วกดปุ่มนี้ผูก signOut() ตรงๆ ทำให้กดแล้วออกจากระบบทันที (ผิด)
@@ -14,6 +16,7 @@ import { IconMenu, IconSearch, IconUser } from "./Icons";
 function AuthButton() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
   if (status === "loading") return null;
   if (!session) {
     return (
@@ -21,8 +24,8 @@ function AuthButton() {
         type="button"
         className="icon-btn"
         onClick={() => signIn("github")}
-        aria-label="เข้าสู่ระบบ"
-        title="เข้าสู่ระบบ"
+        aria-label={t("nav.login")}
+        title={t("nav.login")}
       >
         <IconUser size={19} />
       </button>
@@ -33,8 +36,8 @@ function AuthButton() {
       type="button"
       className="icon-btn icon-btn--active"
       onClick={() => router.push("/account")}
-      aria-label={`${session.user?.login} · ดูโปรไฟล์`}
-      title={`${session.user?.login} · ดูโปรไฟล์`}
+      aria-label={`${session.user?.login} · ${t("nav.viewProfileTitle")}`}
+      title={`${session.user?.login} · ${t("nav.viewProfileTitle")}`}
     >
       <IconUser size={19} />
     </button>
@@ -43,6 +46,7 @@ function AuthButton() {
 
 export default function Layout({ site, children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -60,19 +64,19 @@ export default function Layout({ site, children }) {
               type="button"
               className="icon-btn"
               onClick={() => setDrawerOpen(true)}
-              aria-label="เปิดเมนู"
+              aria-label={t("nav.openMenu")}
             >
               <IconMenu size={21} />
             </button>
 
             <Link href="/" className="masthead__brand">
-              <span className="masthead__mark">▣</span>
+              <BrandMark size={22} />
               {site.site_name}
             </Link>
 
             <span className="masthead__spacer" />
 
-            <Link href="/search" className="icon-btn" aria-label="ค้นหา" title="ค้นหา">
+            <Link href="/search" className="icon-btn" aria-label={t("nav.search")} title={t("nav.search")}>
               <IconSearch size={19} />
             </Link>
             <AuthButton />
@@ -85,9 +89,7 @@ export default function Layout({ site, children }) {
       <BottomNav />
 
       <footer className="footer">
-        <p>
-          ทุกแอปผ่านการตรวจสอบก่อนขึ้นเว็บ · ติดตั้งได้หลายช่องทาง ไม่ผูกกับที่เดียว
-        </p>
+        <p>{t("footer.note")}</p>
       </footer>
     </>
   );

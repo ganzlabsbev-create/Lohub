@@ -1,17 +1,21 @@
+import { useTranslation } from "../lib/i18n";
+
 const STATUS_META = {
-  pending: { label: "รอตรวจ", cls: "badge--pending" },
-  published: { label: "ผ่านแล้ว", cls: "badge--published" },
-  "published-updating": { label: "ผ่านแล้ว · มีอัปเดตรอตรวจ", cls: "badge--updating" },
-  rejected: { label: "ถูกตีกลับ", cls: "badge--rejected" },
-  active: { label: "ใช้งานได้ปกติ", cls: "badge--active" },
-  suspended: { label: "ถูกระงับ", cls: "badge--suspended" },
+  pending: { cls: "badge--pending" },
+  published: { cls: "badge--published" },
+  "published-updating": { cls: "badge--updating" },
+  rejected: { cls: "badge--rejected" },
+  active: { cls: "badge--active" },
+  suspended: { cls: "badge--suspended" },
 };
 
 export default function StatusBadge({ status, title }) {
-  const meta = STATUS_META[status] || { label: status, cls: "" };
+  const { t } = useTranslation();
+  const meta = STATUS_META[status] || { cls: "" };
+  const label = STATUS_META[status] ? t(`statusBadge.${status}`) : status;
   return (
     <span className={`badge ${meta.cls}`} title={title}>
-      {meta.label}
+      {label}
     </span>
   );
 }

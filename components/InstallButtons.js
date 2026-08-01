@@ -1,12 +1,14 @@
 import { IconDownload, IconCode, IconExternal } from "./Icons";
+import { useTranslation } from "../lib/i18n";
 
 const METHOD_META = {
-  apk: { label: "ดาวน์โหลด APK", Icon: IconDownload },
-  github: { label: "เปิดใน GitHub", Icon: IconCode },
-  pwa: { label: "เปิดเว็บแอป", Icon: IconExternal },
+  apk: { labelKey: "installButtons.apk", Icon: IconDownload },
+  github: { labelKey: "installButtons.github", Icon: IconCode },
+  pwa: { labelKey: "installButtons.pwa", Icon: IconExternal },
 };
 
 export default function InstallButtons({ methods }) {
+  const { t } = useTranslation();
   if (!methods || methods.length === 0) return null;
   // primary มาก่อนเสมอ ตามสเปก
   const sorted = [...methods].sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0));
@@ -14,8 +16,9 @@ export default function InstallButtons({ methods }) {
   return (
     <div className="install-row">
       {sorted.map((m, i) => {
-        const meta = METHOD_META[m.type] || { label: m.label, Icon: IconExternal };
+        const meta = METHOD_META[m.type] || { labelKey: null, Icon: IconExternal };
         const Icon = meta.Icon;
+        const fallbackLabel = meta.labelKey ? t(meta.labelKey) : m.label;
         return (
           <a
             key={`${m.type}-${i}`}
@@ -25,7 +28,7 @@ export default function InstallButtons({ methods }) {
             className={`install-btn${m.primary ? " install-btn--primary" : ""}`}
           >
             <Icon size={16} />
-            {m.label || meta.label}
+            {m.label || fallbackLabel}
           </a>
         );
       })}
