@@ -10,6 +10,7 @@ import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
 import { formatDate } from "../../lib/format";
 import { getEffectiveDevelopers, setMockDeveloperStatus } from "../../lib/mockAdmin";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -19,6 +20,7 @@ export async function getStaticProps() {
 export default function AdminDevelopersPage({ site }) {
   const { loading, error, data } = useSearchIndex();
   const [list, setList] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (data) setList(getEffectiveDevelopers(data.developers));
@@ -34,16 +36,12 @@ export default function AdminDevelopersPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="developers" />
           <div className="section__head">
-            <h1>จัดการนักพัฒนา</h1>
+            <h1>{t("adminDevelopers.title")}</h1>
           </div>
-          <p className="banner-note">
-            ระงับนักพัฒนาที่ทำผิดกติกา หรือเปิดใช้งานคืนได้ — สถานะเก็บไว้ในเครื่องนี้เท่านั้น (
-            <code>data/developers/*.json</code> จริงยังแก้ไม่ได้ตรงๆ รอ Part 10 ต่อเป็น PR) การระงับตอนนี้ยังไม่ได้ไป
-            บล็อกการส่งแอปใหม่หรือซ่อนแอปเดิมของนักพัฒนาคนนั้นบนหน้าเว็บ (ทำต่อได้ในตอนถัดไปถ้าต้องการ)
-          </p>
+          <p className="banner-note">{t("adminDevelopers.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminDevelopers.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminDevelopers.loadError", { error })}</StateMessage>}
 
           {data && list && (
             <ul className="dev-list">
@@ -65,6 +63,7 @@ export default function AdminDevelopersPage({ site }) {
 
 function DeveloperRow({ developer, appCount, onChanged }) {
   const suspended = developer.status === "suspended";
+  const { t } = useTranslation();
 
   function toggle() {
     setMockDeveloperStatus(developer.id, suspended ? "active" : "suspended");
@@ -79,12 +78,12 @@ function DeveloperRow({ developer, appCount, onChanged }) {
         <p className="dev-row__name">
           {developer.name}
           {developer.verified && (
-            <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">✓ verified</span>
+            <span className="stamp stamp--inline" title={t("common.verified")}>✓ verified</span>
           )}
         </p>
         <p className="dev-row__meta mono">
-          {developer.id} · @{developer.github_username} · เข้าร่วมเมื่อ {formatDate(developer.joined_at)} ·{" "}
-          {appCount} แอป
+          {developer.id} · @{developer.github_username} ·{" "}
+          {t("adminDevelopers.joinedAppCount", { date: formatDate(developer.joined_at), count: appCount })}
         </p>
       </div>
 
@@ -92,14 +91,14 @@ function DeveloperRow({ developer, appCount, onChanged }) {
 
       <div className="dev-row__actions">
         <Link href={`/developer/${developer.id}`} className="btn-secondary btn-small">
-          ดูโปรไฟล์
+          {t("adminDevelopers.viewProfile")}
         </Link>
         <button
           type="button"
           className={suspended ? "btn-primary btn-small" : "btn-danger btn-small"}
           onClick={toggle}
         >
-          {suspended ? "เปิดใช้งานอีกครั้ง" : "ระงับบัญชี"}
+          {suspended ? t("adminDevelopers.reactivate") : t("adminDevelopers.suspend")}
         </button>
       </div>
     </li>

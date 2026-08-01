@@ -4,6 +4,7 @@ import Layout from "../../components/Layout";
 import AdminGuard from "../../components/AdminGuard";
 import StateMessage from "../../components/StateMessage";
 import { getSiteSettings } from "../../lib/site";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -24,10 +25,11 @@ export default function AdminIndexPage({ site }) {
 
 function AdminRedirect() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     router.replace("/admin/queue");
   }, [router]);
 
-  return <StateMessage kind="loading">กำลังไปที่ Admin Panel...</StateMessage>;
+  return <StateMessage kind="loading">{t("adminIndex.redirecting")}</StateMessage>;
 }

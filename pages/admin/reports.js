@@ -6,17 +6,19 @@ import StateMessage from "../../components/StateMessage";
 import { getSiteSettings } from "../../lib/site";
 import { apiGet, apiPost } from "../../lib/apiClient";
 import { formatDate } from "../../lib/format";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
 }
 
 const STATUS_OPTIONS = ["open", "reviewed", "resolved"];
-const STATUS_LABEL = { open: "เปิดอยู่", reviewed: "ตรวจแล้ว", resolved: "แก้ไขแล้ว" };
-const TYPE_LABEL = { bug: "แอปมีปัญหา", content: "ข้อมูลไม่ถูกต้อง", other: "อื่นๆ" };
 
 export default function AdminReportsPage({ site }) {
   const [state, setState] = useState({ loading: true, error: null, reports: null });
+  const { t } = useTranslation();
+  const statusLabel = { open: t("adminReports.statusOpen"), reviewed: t("adminReports.statusReviewed"), resolved: t("adminReports.statusResolved") };
+  const typeLabel = { bug: t("adminReports.typeBug"), content: t("adminReports.typeContent"), other: t("adminReports.typeOther") };
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -37,18 +39,18 @@ export default function AdminReportsPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="reports" />
           <div className="section__head">
-            <h1>รายงานปัญหา</h1>
+            <h1>{t("adminReports.title")}</h1>
           </div>
-          <p className="banner-note">รายงานปัญหาที่ผู้ใช้แจ้งเข้ามา — เปลี่ยนสถานะได้ที่นี่</p>
+          <p className="banner-note">{t("adminReports.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
-          {reports && reports.length === 0 && <StateMessage kind="empty">ยังไม่มีรายงานปัญหา</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminReports.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminReports.loadError", { error })}</StateMessage>}
+          {reports && reports.length === 0 && <StateMessage kind="empty">{t("adminReports.noReports")}</StateMessage>}
 
           {reports && reports.length > 0 && (
             <ul className="dev-list">
               {reports.map((r) => (
-                <ReportRow key={r.id} report={r} onChanged={load} />
+                <ReportRow key={r.id} report={r} onChanged={load} statusLabel={statusLabel} typeLabel={typeLabel} />
               ))}
             </ul>
           )}
@@ -58,9 +60,10 @@ export default function AdminReportsPage({ site }) {
   );
 }
 
-function ReportRow({ report, onChanged }) {
+function ReportRow({ report, onChanged, statusLabel, typeLabel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   function changeStatus(e) {
     const status = e.target.value;
@@ -75,7 +78,7 @@ function ReportRow({ report, onChanged }) {
   return (
     <li className="dev-row">
       <div className="dev-row__body">
-        <p className="dev-row__name">{TYPE_LABEL[report.type] || report.type || "อื่นๆ"}</p>
+        <p className="dev-row__name">{typeLabel[report.type] || report.type || t("adminReports.typeOther")}</p>
         <p className="dev-row__meta mono">
           {report.app_id} · @{report.username} · {formatDate(report.created_at)}
         </p>
@@ -86,7 +89,7 @@ function ReportRow({ report, onChanged }) {
         <select value={report.status} onChange={changeStatus} disabled={busy}>
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>
-              {STATUS_LABEL[s]}
+              {statusLabel[s]}
             </option>
           ))}
         </select>

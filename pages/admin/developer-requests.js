@@ -6,6 +6,7 @@ import StateMessage from "../../components/StateMessage";
 import { getSiteSettings } from "../../lib/site";
 import { apiGet, apiPost } from "../../lib/apiClient";
 import { formatDate } from "../../lib/format";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -13,6 +14,7 @@ export async function getStaticProps() {
 
 export default function AdminDeveloperRequestsPage({ site }) {
   const [state, setState] = useState({ loading: true, error: null, requests: null });
+  const { t } = useTranslation();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -35,21 +37,17 @@ export default function AdminDeveloperRequestsPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="developer-requests" />
           <div className="section__head">
-            <h1>คำขอเป็น Developer</h1>
+            <h1>{t("adminDeveloperRequests.title")}</h1>
           </div>
-          <p className="banner-note">
-            อนุมัติแล้วระบบจะยกระดับ role เป็น developer ให้อัตโนมัติ พร้อมเปิด Pull Request สร้างไฟล์{" "}
-            <code>data/developers/{"{id}"}.json</code> ให้เองด้วย — ต้องกด merge PR นั้นอีกทีถึงจะขึ้นเว็บจริง
-            (จุดตรวจสอบสุดท้ายก่อน publish)
-          </p>
+          <p className="banner-note">{t("adminDeveloperRequests.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminDeveloperRequests.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminDeveloperRequests.loadError", { error })}</StateMessage>}
 
           {requests && (
             <>
               {pending.length === 0 ? (
-                <StateMessage kind="empty">ไม่มีคำขอรอตรวจตอนนี้</StateMessage>
+                <StateMessage kind="empty">{t("adminDeveloperRequests.noRequests")}</StateMessage>
               ) : (
                 <ul className="dev-list">
                   {pending.map((r) => (
@@ -61,7 +59,7 @@ export default function AdminDeveloperRequestsPage({ site }) {
               {done.length > 0 && (
                 <div className="section" style={{ marginTop: 28 }}>
                   <div className="section__head">
-                    <h2>ประวัติคำขอ</h2>
+                    <h2>{t("adminDeveloperRequests.historyTitle")}</h2>
                   </div>
                   <ul className="dev-list">
                     {done.map((r) => (
@@ -72,12 +70,12 @@ export default function AdminDeveloperRequestsPage({ site }) {
                             <span
                               className={`badge ${r.status === "approved" ? "badge--published" : "badge--rejected"}`}
                             >
-                              {r.status === "approved" ? "อนุมัติแล้ว" : "ปฏิเสธ"}
+                              {r.status === "approved" ? t("adminDeveloperRequests.approved") : t("adminDeveloperRequests.rejected")}
                             </span>
                           </p>
                           <p className="dev-row__meta mono">
                             {formatDate(r.created_at)}
-                            {r.admin_note ? ` · หมายเหตุ: ${r.admin_note}` : ""}
+                            {r.admin_note ? t("adminDeveloperRequests.noteLabel", { note: r.admin_note }) : ""}
                           </p>
                         </div>
                       </li>
@@ -98,6 +96,7 @@ function PendingRow({ request, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [github, setGithub] = useState(null);
+  const { t } = useTranslation();
 
   function decide(status) {
     setBusy(true);
@@ -127,43 +126,42 @@ function PendingRow({ request, onChanged }) {
     <li className="dev-row">
       <div className="dev-row__body">
         <p className="dev-row__name">@{request.username}</p>
-        <p className="dev-row__meta mono">ส่งเมื่อ {formatDate(request.created_at)}</p>
+        <p className="dev-row__meta mono">{t("adminDeveloperRequests.submittedOn", { date: formatDate(request.created_at) })}</p>
         {request.reason && <p className="dev-row__text">{request.reason}</p>}
         {request.portfolio_url && (
           <p className="dev-row__text">
             <a href={request.portfolio_url} target="_blank" rel="noreferrer">
-              ดูผลงาน
+              {t("adminDeveloperRequests.viewPortfolio")}
             </a>
           </p>
         )}
-        {request.website && <p className="dev-row__text">เว็บไซต์: {request.website}</p>}
-        {request.contact && <p className="dev-row__text">ติดต่อ: {request.contact}</p>}
+        {request.website && <p className="dev-row__text">{t("adminDeveloperRequests.websiteLabel", { website: request.website })}</p>}
+        {request.contact && <p className="dev-row__text">{t("adminDeveloperRequests.contactLabel", { contact: request.contact })}</p>}
         <label className="form-field">
-          <span className="form-field__label">หมายเหตุถึงผู้สมัคร (ถ้ามี)</span>
+          <span className="form-field__label">{t("adminDeveloperRequests.adminNoteLabel")}</span>
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
         {error && <span className="field-error">{error}</span>}
         {github?.ok && (
           <p className="banner-note banner-note--ok">
-            อนุมัติแล้ว และสร้างไฟล์ให้เรียบร้อย —{" "}
+            {t("adminDeveloperRequests.approvedWithFile")}{" "}
             <a href={github.pr_url} target="_blank" rel="noreferrer">
-              เปิด Pull Request #{github.pr_number} เพื่อกด merge
+              {t("adminDeveloperRequests.openPrToMerge", { number: github.pr_number })}
             </a>
           </p>
         )}
         {github && !github.ok && (
           <p className="banner-note">
-            role เปลี่ยนเป็น developer แล้ว แต่สร้างไฟล์/PR อัตโนมัติไม่สำเร็จ: {github.error} —
-            ลองกด "อนุมัติ" ซ้ำอีกครั้ง หรือเพิ่มไฟล์ <code>data/developers/{"{id}"}.json</code> เองผ่าน GitHub
+            {t("adminDeveloperRequests.roleChangedNoFile", { error: github.error })}
           </p>
         )}
       </div>
       <div className="dev-row__actions">
         <button type="button" className="btn-primary btn-small" onClick={() => decide("approved")} disabled={busy}>
-          อนุมัติ
+          {t("adminDeveloperRequests.approve")}
         </button>
         <button type="button" className="btn-danger btn-small" onClick={() => decide("rejected")} disabled={busy}>
-          ปฏิเสธ
+          {t("adminDeveloperRequests.reject")}
         </button>
       </div>
     </li>

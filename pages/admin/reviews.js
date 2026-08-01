@@ -6,6 +6,7 @@ import StateMessage from "../../components/StateMessage";
 import { getSiteSettings } from "../../lib/site";
 import { apiGet, apiPost } from "../../lib/apiClient";
 import { formatDate } from "../../lib/format";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -13,6 +14,7 @@ export async function getStaticProps() {
 
 export default function AdminReviewsPage({ site }) {
   const [state, setState] = useState({ loading: true, error: null, reviews: null });
+  const { t } = useTranslation();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -33,13 +35,13 @@ export default function AdminReviewsPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="reviews" />
           <div className="section__head">
-            <h1>จัดการรีวิว</h1>
+            <h1>{t("adminReviews.title")}</h1>
           </div>
-          <p className="banner-note">รีวิวทั้งหมดจากผู้ใช้ ทั้งที่มองเห็นได้และถูกซ่อนแล้ว</p>
+          <p className="banner-note">{t("adminReviews.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
-          {reviews && reviews.length === 0 && <StateMessage kind="empty">ยังไม่มีรีวิว</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminReviews.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminReviews.loadError", { error })}</StateMessage>}
+          {reviews && reviews.length === 0 && <StateMessage kind="empty">{t("adminReviews.noReviews")}</StateMessage>}
 
           {reviews && reviews.length > 0 && (
             <ul className="dev-list">
@@ -58,9 +60,10 @@ function ReviewRow({ review, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const hidden = review.status === "hidden";
+  const { t } = useTranslation();
 
   function act(action) {
-    if (action === "delete" && !window.confirm("ยืนยันลบรีวิวนี้ถาวร? กู้คืนไม่ได้")) return;
+    if (action === "delete" && !window.confirm(t("adminReviews.confirmDelete"))) return;
     setBusy(true);
     setError("");
     apiPost("/api/admin/reviews", { review_id: review.id, action })
@@ -78,7 +81,7 @@ function ReviewRow({ review, onChanged }) {
             {"☆".repeat(5 - (review.rating || 0))}
           </span>
           <span className={`badge ${hidden ? "badge--rejected" : "badge--published"}`}>
-            {hidden ? "ซ่อนอยู่" : "มองเห็นได้"}
+            {hidden ? t("adminReviews.hidden") : t("adminReviews.visible")}
           </span>
         </p>
         <p className="dev-row__meta mono">
@@ -94,10 +97,10 @@ function ReviewRow({ review, onChanged }) {
           onClick={() => act(hidden ? "unhide" : "hide")}
           disabled={busy}
         >
-          {hidden ? "เลิกซ่อน" : "ซ่อน"}
+          {hidden ? t("adminReviews.unhide") : t("adminReviews.hide")}
         </button>
         <button type="button" className="btn-danger btn-small" onClick={() => act("delete")} disabled={busy}>
-          ลบ
+          {t("adminReviews.delete")}
         </button>
       </div>
     </li>

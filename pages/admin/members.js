@@ -5,15 +5,15 @@ import AdminGuard from "../../components/AdminGuard";
 import StateMessage from "../../components/StateMessage";
 import { getSiteSettings } from "../../lib/site";
 import { apiGet, apiPost } from "../../lib/apiClient";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
 }
 
-const ROLE_LABEL = { member: "สมาชิก", developer: "นักพัฒนา", admin: "แอดมิน" };
-
 export default function AdminMembersPage({ site }) {
   const [state, setState] = useState({ loading: true, error: null, members: null });
+  const { t } = useTranslation();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -34,15 +34,13 @@ export default function AdminMembersPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="members" />
           <div className="section__head">
-            <h1>จัดการสมาชิก</h1>
+            <h1>{t("adminMembers.title")}</h1>
           </div>
-          <p className="banner-note">
-            รายชื่อสมาชิกทั้งหมดที่เคย login เข้าระบบ — ให้/ถอน verified badge ได้ที่นี่
-          </p>
+          <p className="banner-note">{t("adminMembers.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
-          {members && members.length === 0 && <StateMessage kind="empty">ยังไม่มีสมาชิก</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminMembers.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminMembers.loadError", { error })}</StateMessage>}
+          {members && members.length === 0 && <StateMessage kind="empty">{t("adminMembers.noMembers")}</StateMessage>}
 
           {members && members.length > 0 && (
             <ul className="dev-list">
@@ -60,6 +58,8 @@ export default function AdminMembersPage({ site }) {
 function MemberRow({ member, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
+  const roleLabel = { member: t("adminMembers.roleMember"), developer: t("adminMembers.roleDeveloper"), admin: t("adminMembers.roleAdmin") };
 
   function toggleVerified() {
     setBusy(true);
@@ -76,13 +76,13 @@ function MemberRow({ member, onChanged }) {
         <p className="dev-row__name">
           {member.display_name || member.username}
           {member.verified && (
-            <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">
+            <span className="stamp stamp--inline" title={t("common.verified")}>
               ✓ verified
             </span>
           )}
         </p>
         <p className="dev-row__meta mono">
-          @{member.username} · {ROLE_LABEL[member.role] || member.role}
+          @{member.username} · {roleLabel[member.role] || member.role}
         </p>
         {error && <span className="field-error">{error}</span>}
       </div>
@@ -93,7 +93,7 @@ function MemberRow({ member, onChanged }) {
           onClick={toggleVerified}
           disabled={busy}
         >
-          {busy ? "กำลังบันทึก..." : member.verified ? "ถอน verified" : "ให้ verified"}
+          {busy ? t("adminMembers.saving") : member.verified ? t("adminMembers.revokeVerified") : t("adminMembers.grantVerified")}
         </button>
       </div>
     </li>

@@ -9,6 +9,7 @@ import { useSearchIndex } from "../../lib/useSearchIndex";
 import { getSiteSettings } from "../../lib/site";
 import { formatDate, formatSize } from "../../lib/format";
 import { apiGet, apiPatch } from "../../lib/apiClient";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -25,6 +26,7 @@ export default function AdminQueuePage({ site }) {
   const { loading: siteLoading, error: siteError, data } = useSearchIndex();
   const [prState, setPrState] = useState({ loading: true, error: null, prs: null });
   const [appState, setAppState] = useState({ loading: true, error: null, apps: null });
+  const { t } = useTranslation();
 
   function loadPRs() {
     setPrState((s) => ({ ...s, loading: true, error: null }));
@@ -51,25 +53,20 @@ export default function AdminQueuePage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="queue" />
           <div className="section__head">
-            <h1>คิวรอตรวจ</h1>
+            <h1>{t("adminQueue.title")}</h1>
           </div>
 
-          <h2 style={{ marginTop: 4 }}>PR รอ merge</h2>
-          <p className="banner-note">
-            แอปที่ developer เพิ่งส่งผ่านฟอร์ม — ยังไม่เข้า main ต้อง merge ก่อนถึงจะมีไฟล์แอปจริง
-          </p>
-          {prState.loading && <StateMessage kind="loading">กำลังโหลด PR...</StateMessage>}
-          {prState.error && <StateMessage kind="error">โหลด PR ไม่สำเร็จ: {prState.error}</StateMessage>}
+          <h2 style={{ marginTop: 4 }}>{t("adminQueue.prSectionTitle")}</h2>
+          <p className="banner-note">{t("adminQueue.prSectionNote")}</p>
+          {prState.loading && <StateMessage kind="loading">{t("adminQueue.loadingPr")}</StateMessage>}
+          {prState.error && <StateMessage kind="error">{t("adminQueue.loadPrError", { error: prState.error })}</StateMessage>}
           {prState.prs && <PRList prs={prState.prs} onChanged={() => { loadPRs(); loadApps(); }} />}
 
-          <h2 style={{ marginTop: 32 }}>แอปรอ publish</h2>
-          <p className="banner-note">
-            แอปที่ merge เข้า main แล้ว (มีไฟล์ใน <code>data/apps/</code> จริง) แต่ยังไม่ขึ้นเว็บ — กด
-            &quot;อนุมัติ&quot; เพื่อเผยแพร่ หรือ &quot;ปฏิเสธ&quot; เพื่อตีกลับ
-          </p>
-          {(appState.loading || siteLoading) && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
+          <h2 style={{ marginTop: 32 }}>{t("adminQueue.publishSectionTitle")}</h2>
+          <p className="banner-note">{t("adminQueue.publishSectionNote")}</p>
+          {(appState.loading || siteLoading) && <StateMessage kind="loading">{t("adminQueue.loading")}</StateMessage>}
           {(appState.error || siteError) && (
-            <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {appState.error || siteError}</StateMessage>
+            <StateMessage kind="error">{t("adminQueue.loadError", { error: appState.error || siteError })}</StateMessage>
           )}
           {data && appState.apps && (
             <QueueList
@@ -86,8 +83,9 @@ export default function AdminQueuePage({ site }) {
 }
 
 function PRList({ prs, onChanged }) {
+  const { t } = useTranslation();
   if (prs.length === 0) {
-    return <StateMessage kind="empty">ไม่มี PR ส่งแอปใหม่ค้างอยู่</StateMessage>;
+    return <StateMessage kind="empty">{t("adminQueue.noPrs")}</StateMessage>;
   }
   return (
     <ul className="dev-list">
@@ -101,6 +99,7 @@ function PRList({ prs, onChanged }) {
 function PRRow({ pr, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   function merge() {
     setBusy(true);
@@ -122,10 +121,10 @@ function PRRow({ pr, onChanged }) {
       </div>
       <div className="dev-row__actions">
         <a href={pr.html_url} target="_blank" rel="noreferrer" className="btn-secondary btn-small">
-          ดู diff บน GitHub
+          {t("adminQueue.viewDiff")}
         </a>
         <button type="button" className="btn-primary btn-small" onClick={merge} disabled={busy}>
-          🔀 ผสาน (merge)
+          {t("adminQueue.merge")}
         </button>
       </div>
     </li>
@@ -133,8 +132,9 @@ function PRRow({ pr, onChanged }) {
 }
 
 function QueueList({ queue, developers, categories, onChanged }) {
+  const { t } = useTranslation();
   if (queue.length === 0) {
-    return <StateMessage kind="empty">ไม่มีแอปรอ publish ตอนนี้ 🎉</StateMessage>;
+    return <StateMessage kind="empty">{t("adminQueue.noPending")}</StateMessage>;
   }
 
   return (
@@ -157,6 +157,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   const primaryMethod = draft.install_methods?.find((m) => m.primary) || draft.install_methods?.[0];
 
@@ -171,7 +172,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
 
   function confirmReject() {
     if (reason.trim().length < 3) {
-      setError("กรอกเหตุผลอย่างน้อย 3 ตัวอักษร (developer จะเห็นข้อความนี้)");
+      setError(t("adminQueue.rejectReasonRequired"));
       return;
     }
     setBusy(true);
@@ -189,7 +190,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
         <div className="queue-item__title">
           <h3>{draft.name}</h3>
           <p className="queue-item__meta mono">
-            {draft.id} · ส่งโดย {developer?.name || draft.developer_id} · {formatDate(draft.created_at)}
+            {draft.id} · {t("adminQueue.submittedBy")} {developer?.name || draft.developer_id} · {formatDate(draft.created_at)}
           </p>
         </div>
       </div>
@@ -198,19 +199,19 @@ function QueueItem({ draft, developer, categories, onChanged }) {
 
       <dl className="queue-item__facts">
         <div>
-          <dt>หมวดหมู่</dt>
+          <dt>{t("adminQueue.category")}</dt>
           <dd>{categories.map((c) => c.name).join(", ") || "—"}</dd>
         </div>
         <div>
-          <dt>License</dt>
+          <dt>{t("adminQueue.license")}</dt>
           <dd>{draft.license}</dd>
         </div>
         <div>
-          <dt>ติดตั้งผ่าน</dt>
+          <dt>{t("adminQueue.installVia")}</dt>
           <dd>
             {primaryMethod ? (
               <a href={primaryMethod.url} target="_blank" rel="noreferrer">
-                {primaryMethod.type.toUpperCase()} — ตรวจลิงก์
+                {primaryMethod.type.toUpperCase()} {t("adminQueue.checkLink")}
               </a>
             ) : (
               "—"
@@ -218,7 +219,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
           </dd>
         </div>
         <div>
-          <dt>ขนาดไฟล์</dt>
+          <dt>{t("adminQueue.sizeMb")}</dt>
           <dd>{formatSize(draft.size_mb)}</dd>
         </div>
       </dl>
@@ -228,7 +229,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
       {!rejecting ? (
         <div className="form-actions">
           <button type="button" className="btn-primary" onClick={approve} disabled={busy}>
-            ✅ อนุมัติ
+            {t("adminQueue.approve")}
           </button>
           <button
             type="button"
@@ -236,18 +237,18 @@ function QueueItem({ draft, developer, categories, onChanged }) {
             onClick={() => setRejecting(true)}
             disabled={busy}
           >
-            ✕ ปฏิเสธ
+            {t("adminQueue.reject")}
           </button>
           {developer && (
             <Link href={`/developer/${developer.id}`} className="btn-secondary btn-small">
-              ดูโปรไฟล์นักพัฒนา
+              {t("adminQueue.viewDeveloperProfile")}
             </Link>
           )}
         </div>
       ) : (
         <div className="reject-box">
           <label className="form-field">
-            <span className="form-field__label">เหตุผลที่ปฏิเสธ (จะโชว์ให้ developer เห็น)</span>
+            <span className="form-field__label">{t("adminQueue.rejectReasonLabel")}</span>
             <textarea
               rows={2}
               value={reason}
@@ -255,12 +256,12 @@ function QueueItem({ draft, developer, categories, onChanged }) {
                 setReason(e.target.value);
                 setError("");
               }}
-              placeholder="เช่น ลิงก์ APK เข้าไม่ได้ / คำอธิบายไม่ตรงกับแอปจริง"
+              placeholder={t("adminQueue.rejectReasonPlaceholder")}
             />
           </label>
           <div className="form-actions">
             <button type="button" className="btn-danger" onClick={confirmReject} disabled={busy}>
-              ยืนยันปฏิเสธ
+              {t("adminQueue.confirmReject")}
             </button>
             <button
               type="button"
@@ -272,7 +273,7 @@ function QueueItem({ draft, developer, categories, onChanged }) {
               }}
               disabled={busy}
             >
-              ยกเลิก
+              {t("adminQueue.cancel")}
             </button>
           </div>
         </div>

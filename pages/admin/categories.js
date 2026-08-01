@@ -13,6 +13,7 @@ import {
   removeMockNewCategory,
   nextMockCategoryId,
 } from "../../lib/mockAdmin";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -22,6 +23,7 @@ export async function getStaticProps() {
 export default function AdminCategoriesPage({ site }) {
   const { loading, error, data } = useSearchIndex();
   const [list, setList] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (data) setList(getEffectiveCategories(data.categories));
@@ -37,15 +39,12 @@ export default function AdminCategoriesPage({ site }) {
         <section className="section dev-narrow">
           <AdminNav active="categories" />
           <div className="section__head">
-            <h1>จัดการหมวดหมู่</h1>
+            <h1>{t("adminCategories.title")}</h1>
           </div>
-          <p className="banner-note">
-            หน้านี้ยังเป็นโหมดทดสอบในเครื่องนี้เท่านั้น (เขียนทับ <code>data/categories/*.json</code> จริงไม่ได้ —
-            รอ Part 10 ต่อเป็น PR) ใช้ปุ่ม ▲▼ เพื่อสลับลำดับ (<code>order</code>) กับหมวดที่อยู่ติดกัน
-          </p>
+          <p className="banner-note">{t("adminCategories.note")}</p>
 
-          {loading && <StateMessage kind="loading">กำลังโหลดข้อมูล...</StateMessage>}
-          {error && <StateMessage kind="error">โหลดข้อมูลไม่สำเร็จ: {error}</StateMessage>}
+          {loading && <StateMessage kind="loading">{t("adminCategories.loading")}</StateMessage>}
+          {error && <StateMessage kind="error">{t("adminCategories.loadError", { error })}</StateMessage>}
 
           {data && list && (
             <CategoryManager
@@ -98,6 +97,7 @@ function CategoryRow({ category, appCount, onMoveUp, onMoveDown, isFirst, isLast
   const [form, setForm] = useState({ name: category.name, icon: category.icon, color: category.color });
   const dirty =
     form.name !== category.name || form.icon !== category.icon || form.color !== category.color;
+  const { t } = useTranslation();
 
   function save() {
     if (!form.name.trim()) return;
@@ -110,7 +110,7 @@ function CategoryRow({ category, appCount, onMoveUp, onMoveDown, isFirst, isLast
   }
 
   function remove() {
-    if (!window.confirm(`ลบหมวด "${category.name}" ที่เพิ่งสร้างในเครื่องนี้?`)) return;
+    if (!window.confirm(t("adminCategories.confirmDelete", { name: category.name }))) return;
     removeMockNewCategory(category.id);
     onSaved();
   }
@@ -118,10 +118,10 @@ function CategoryRow({ category, appCount, onMoveUp, onMoveDown, isFirst, isLast
   return (
     <li className="cat-row">
       <div className="cat-row__order">
-        <button type="button" className="order-btn" onClick={onMoveUp} disabled={isFirst} aria-label="เลื่อนขึ้น">
+        <button type="button" className="order-btn" onClick={onMoveUp} disabled={isFirst} aria-label={t("adminCategories.moveUp")}>
           ▲
         </button>
-        <button type="button" className="order-btn" onClick={onMoveDown} disabled={isLast} aria-label="เลื่อนลง">
+        <button type="button" className="order-btn" onClick={onMoveDown} disabled={isLast} aria-label={t("adminCategories.moveDown")}>
           ▼
         </button>
       </div>
@@ -137,8 +137,8 @@ function CategoryRow({ category, appCount, onMoveUp, onMoveDown, isFirst, isLast
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         />
         <p className="cat-row__meta mono">
-          {category.id} · {category.slug} · {appCount} แอป
-          {category.__isNew && " · สร้างใหม่ในเครื่องนี้"}
+          {category.id} · {category.slug} · {t("adminCategories.appCount", { count: appCount })}
+          {category.__isNew && t("adminCategories.createdLocally")}
         </p>
       </div>
 
@@ -147,25 +147,25 @@ function CategoryRow({ category, appCount, onMoveUp, onMoveDown, isFirst, isLast
         value={form.icon}
         onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
         maxLength={4}
-        aria-label="ไอคอน (emoji)"
+        aria-label={t("adminCategories.iconAriaLabel")}
       />
       <input
         type="color"
         className="cat-row__color"
         value={form.color}
         onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-        aria-label="สี"
+        aria-label={t("adminCategories.colorAriaLabel")}
       />
 
       <div className="cat-row__actions">
         {dirty && (
           <button type="button" className="btn-primary btn-small" onClick={save}>
-            บันทึก
+            {t("adminCategories.save")}
           </button>
         )}
         {category.__isNew && (
           <button type="button" className="btn-danger btn-small" onClick={remove}>
-            ลบ
+            {t("adminCategories.delete")}
           </button>
         )}
       </div>
@@ -180,6 +180,7 @@ function AddCategoryForm({ baseCategories, existingList, onAdded }) {
   const [icon, setIcon] = useState("📦");
   const [color, setColor] = useState("#4A90D9");
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   function submit(e) {
     e.preventDefault();
@@ -187,11 +188,11 @@ function AddCategoryForm({ baseCategories, existingList, onAdded }) {
     const finalSlug = slugify(slug.trim() || trimmed);
 
     if (trimmed.length < 2) {
-      setError("กรอกชื่อหมวดหมู่อย่างน้อย 2 ตัวอักษร");
+      setError(t("adminCategories.nameRequired"));
       return;
     }
     if (existingList.some((c) => c.slug === finalSlug)) {
-      setError("slug นี้ถูกใช้ไปแล้ว ลองเปลี่ยนชื่อหรือแก้ slug เอง");
+      setError(t("adminCategories.slugTaken"));
       return;
     }
 
@@ -217,17 +218,17 @@ function AddCategoryForm({ baseCategories, existingList, onAdded }) {
   if (!open) {
     return (
       <button type="button" className="btn-secondary" onClick={() => setOpen(true)}>
-        ➕ เพิ่มหมวดหมู่ใหม่
+        {t("adminCategories.addNew")}
       </button>
     );
   }
 
   return (
     <form className="dev-form cat-add-form" onSubmit={submit}>
-      <Field label="ชื่อหมวดหมู่" error={error}>
+      <Field label={t("adminCategories.name")} error={error}>
         <input value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
-      <Field label="Slug (ไม่บังคับ เว้นว่างจะสร้างจากชื่อ)">
+      <Field label={t("adminCategories.slug")}>
         <input
           className="mono"
           value={slug}
@@ -236,19 +237,19 @@ function AddCategoryForm({ baseCategories, existingList, onAdded }) {
         />
       </Field>
       <div className="cat-add-form__row">
-        <Field label="ไอคอน (emoji)">
+        <Field label={t("adminCategories.icon")}>
           <input value={icon} onChange={(e) => setIcon(e.target.value)} maxLength={4} />
         </Field>
-        <Field label="สี">
+        <Field label={t("adminCategories.color")}>
           <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
         </Field>
       </div>
       <div className="form-actions">
         <button type="submit" className="btn-primary">
-          บันทึกหมวดหมู่ใหม่
+          {t("adminCategories.saveNew")}
         </button>
         <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>
-          ยกเลิก
+          {t("adminCategories.cancel")}
         </button>
       </div>
     </form>
