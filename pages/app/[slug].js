@@ -16,6 +16,7 @@ import { getSiteSettings } from "../../lib/site";
 import { getMockApprovedApps, getEffectiveCategories } from "../../lib/mockAdmin";
 import { isAdminUsername } from "../../lib/auth";
 import { apiGet, apiPost, apiDelete } from "../../lib/apiClient";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -32,6 +33,7 @@ export default function AppDetailPage({ site }) {
   const { slug } = router.query;
   const { loading, error, data } = useSearchIndex();
   const { data: session } = useSession();
+  const { t } = useTranslation();
 
   // แอปที่ admin mock-อนุมัติแล้ว (Part 8) ยังไม่ได้อยู่ใน search-index.json จริง (client เขียนไฟล์ไม่ได้) — เลยเผื่อหาที่นี่ด้วย
   const mockApproved = data ? Object.values(getMockApprovedApps()) : [];
@@ -46,23 +48,23 @@ export default function AppDetailPage({ site }) {
 
   return (
     <Layout site={site}>
-      {loading && <StateMessage kind="loading">กำลังโหลดข้อมูลแอป...</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("appDetail.loading")}</StateMessage>}
       {error && (
         <StateMessage kind="error">
-          โหลดข้อมูลไม่สำเร็จ: {error} — ลองรีเฟรชหน้าใหม่อีกครั้ง
+          {t("appDetail.loadError", { error })}
         </StateMessage>
       )}
 
       {data && !app && slug && (
         <StateMessage kind="empty">
-          ไม่พบแอป "{slug}" — <Link href="/">กลับหน้าแรก</Link>
+          {t("appDetail.notFound", { slug })} <Link href="/">{t("appDetail.backToHome")}</Link>
         </StateMessage>
       )}
 
       {app && (
         <>
           <p className="breadcrumb">
-            <Link href="/">หน้าแรก</Link>
+            <Link href="/">{t("appDetail.breadcrumbHome")}</Link>
             {cats[0] && (
               <>
                 {" › "}
@@ -78,14 +80,14 @@ export default function AppDetailPage({ site }) {
             <div className="app-detail__title">
               <h1>
                 {app.name}
-                {app.verified && <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">✓ verified</span>}
+                {app.verified && <span className="stamp stamp--inline" title={t("common.verified")}>✓ verified</span>}
               </h1>
               <p className="app-detail__dev">
-                โดย{" "}
+                {t("appDetail.byDeveloper")}{" "}
                 {developer ? (
                   <Link href={`/developer/${developer.id}`}>{developer.name}</Link>
                 ) : (
-                  "ไม่ทราบนักพัฒนา"
+                  t("appDetail.unknownDeveloper")
                 )}
               </p>
               <div className="app-detail__cats">
@@ -102,7 +104,7 @@ export default function AppDetailPage({ site }) {
 
           <section className="section">
             <div className="section__head">
-              <h2>เกี่ยวกับแอปนี้</h2>
+              <h2>{t("appDetail.aboutTitle")}</h2>
             </div>
             <p className="app-detail__desc">{app.description_full || app.description_short}</p>
           </section>
@@ -116,11 +118,11 @@ export default function AppDetailPage({ site }) {
           )}
 
           <div className="meta-grid">
-            <div><span>เวอร์ชันล่าสุด</span><strong className="mono">v{app.current_version}</strong></div>
-            <div><span>ขนาดไฟล์</span><strong>{formatSize(app.size_mb)}</strong></div>
-            <div><span>รองรับ</span><strong>{app.min_os || "-"}</strong></div>
-            <div><span>สัญญาอนุญาต</span><strong>{app.license || "-"}</strong></div>
-            <div><span>ภาษา</span><strong>{(app.languages || []).join(", ") || "-"}</strong></div>
+            <div><span>{t("appDetail.metaVersion")}</span><strong className="mono">v{app.current_version}</strong></div>
+            <div><span>{t("appDetail.metaSize")}</span><strong>{formatSize(app.size_mb)}</strong></div>
+            <div><span>{t("appDetail.metaOs")}</span><strong>{app.min_os || "-"}</strong></div>
+            <div><span>{t("appDetail.metaLicense")}</span><strong>{app.license || "-"}</strong></div>
+            <div><span>{t("appDetail.metaLanguages")}</span><strong>{(app.languages || []).join(", ") || "-"}</strong></div>
           </div>
 
           <VersionHistory versions={app.version_history} currentVersion={app.current_version} />
@@ -138,6 +140,7 @@ export default function AppDetailPage({ site }) {
 
 // แอปที่เกี่ยวข้อง — คัดจากหมวดหมู่แรกของแอปนี้ (ใช้ข้อมูลที่โหลดมาแล้วทั้งหมด ไม่ fetch เพิ่ม)
 function RelatedApps({ app, categories, allApps }) {
+  const { t } = useTranslation();
   const firstCatId = app.category_ids?.[0];
   if (!firstCatId) return null;
   const related = allApps
@@ -148,7 +151,7 @@ function RelatedApps({ app, categories, allApps }) {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>แอปที่เกี่ยวข้อง</h2>
+        <h2>{t("appDetail.relatedTitle")}</h2>
       </div>
       <div className="app-grid">
         {related.map((a) => (
@@ -166,18 +169,17 @@ function AdminDeleteApp({ app }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   function handleDelete() {
-    const confirmed = window.confirm(
-      `ยืนยันลบแอป "${app.name}" ถาวร? การลบนี้กู้คืนไม่ได้ (ลบไฟล์จริงใน GitHub)`
-    );
+    const confirmed = window.confirm(t("appDetail.adminDeleteConfirm", { name: app.name }));
     if (!confirmed) return;
 
     setBusy(true);
     setError("");
     apiDelete(`/api/admin/apps/${app.id}`)
       .then(() => {
-        window.alert(`ลบแอป "${app.name}" เรียบร้อยแล้ว`);
+        window.alert(t("appDetail.adminDeleteDone", { name: app.name }));
         router.push("/");
       })
       .catch((err) => {
@@ -189,10 +191,10 @@ function AdminDeleteApp({ app }) {
   return (
     <section className="section banner-note" style={{ borderColor: "var(--danger-soft)" }}>
       <p style={{ margin: "0 0 10px" }}>
-        โซน Admin — ลบแอปนี้ออกจากระบบถาวร (ลบไฟล์ <code>data/apps/{app.id}.json</code> ใน GitHub จริง)
+        {t("appDetail.adminDeleteZonePrefix")} <code>data/apps/{app.id}.json</code> {t("appDetail.adminDeleteZoneSuffix")}
       </p>
       <button type="button" className="btn-danger btn-small" onClick={handleDelete} disabled={busy}>
-        {busy ? "กำลังลบ..." : "ลบแอปนี้"}
+        {busy ? t("appDetail.deleting") : t("appDetail.deleteThisApp")}
       </button>
       {error && <span className="field-error"> {error}</span>}
     </section>
@@ -205,6 +207,7 @@ function ReviewsSection({ app }) {
   const { data: session } = useSession();
   const [state, setState] = useState({ loading: true, error: null, reviews: [] });
   const [reportOpen, setReportOpen] = useState(false);
+  const { t } = useTranslation();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -223,13 +226,13 @@ function ReviewsSection({ app }) {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>รีวิวจากผู้ใช้</h2>
+        <h2>{t("appDetail.reviewsTitle")}</h2>
       </div>
 
-      {loading && <StateMessage kind="loading">กำลังโหลดรีวิว...</StateMessage>}
-      {error && <StateMessage kind="error">โหลดรีวิวไม่สำเร็จ: {error}</StateMessage>}
+      {loading && <StateMessage kind="loading">{t("appDetail.reviewsLoading")}</StateMessage>}
+      {error && <StateMessage kind="error">{t("appDetail.reviewsLoadError", { error })}</StateMessage>}
       {!loading && !error && reviews.length === 0 && (
-        <StateMessage kind="empty">ยังไม่มีรีวิว เป็นคนแรกที่รีวิวแอปนี้สิ</StateMessage>
+        <StateMessage kind="empty">{t("appDetail.noReviews")}</StateMessage>
       )}
 
       {reviews.length > 0 && (
@@ -246,9 +249,9 @@ function ReviewsSection({ app }) {
         <ReviewForm appId={app.id} onSubmitted={load} />
       ) : (
         <StateMessage kind="empty">
-          เข้าสู่ระบบเพื่อเขียนรีวิว —{" "}
+          {t("appDetail.loginToReview")} —{" "}
           <button type="button" className="link-button" onClick={() => signIn("github")}>
-            เข้าสู่ระบบด้วย GitHub
+            {t("common.loginWithGithub")}
           </button>
         </StateMessage>
       )}
@@ -259,6 +262,7 @@ function ReviewsSection({ app }) {
 }
 
 function ReviewItem({ review }) {
+  const { t } = useTranslation();
   return (
     <li className="dev-row">
       <div className="dev-row__body">
@@ -267,7 +271,7 @@ function ReviewItem({ review }) {
           {"☆".repeat(5 - (review.rating || 0))}
         </p>
         <p className="dev-row__meta mono">
-          @{review.username || review.display_name || "ผู้ใช้"} · {formatDate(review.created_at)}
+          @{review.username || review.display_name || t("appDetail.anonymousUser")} · {formatDate(review.created_at)}
         </p>
         {review.comment && <p className="dev-row__text">{review.comment}</p>}
       </div>
@@ -276,15 +280,16 @@ function ReviewItem({ review }) {
 }
 
 function StarRatingInput({ value, onChange }) {
+  const { t } = useTranslation();
   return (
-    <div className="star-input" role="radiogroup" aria-label="ให้คะแนน 1-5 ดาว">
+    <div className="star-input" role="radiogroup" aria-label={t("appDetail.ratingAriaLabel")}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
           type="button"
           className={`star-btn${n <= value ? " star-btn--filled" : ""}`}
           onClick={() => onChange(n)}
-          aria-label={`${n} ดาว`}
+          aria-label={t("appDetail.starAriaLabel", { n })}
         >
           ★
         </button>
@@ -298,11 +303,12 @@ function ReviewForm({ appId, onSubmitted }) {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   function submit(e) {
     e.preventDefault();
     if (rating < 1) {
-      setError("กรุณาเลือกจำนวนดาวก่อนส่งรีวิว");
+      setError(t("appDetail.ratingRequired"));
       return;
     }
     setSubmitting(true);
@@ -320,22 +326,22 @@ function ReviewForm({ appId, onSubmitted }) {
   return (
     <form className="review-form" onSubmit={submit}>
       <label className="form-field">
-        <span className="form-field__label">ให้คะแนน</span>
+        <span className="form-field__label">{t("appDetail.ratingLabel")}</span>
         <StarRatingInput value={rating} onChange={setRating} />
       </label>
       <label className="form-field">
-        <span className="form-field__label">ความคิดเห็น (ถ้ามี)</span>
+        <span className="form-field__label">{t("appDetail.commentLabel")}</span>
         <textarea
           rows={3}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="บอกเล่าประสบการณ์การใช้งาน..."
+          placeholder={t("appDetail.commentPlaceholder")}
         />
       </label>
       {error && <span className="field-error">{error}</span>}
       <div className="form-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? "กำลังส่ง..." : "ส่งรีวิว"}
+          {submitting ? t("appDetail.sending") : t("appDetail.submitReview")}
         </button>
       </div>
     </form>
@@ -343,9 +349,9 @@ function ReviewForm({ appId, onSubmitted }) {
 }
 
 const REPORT_TYPES = [
-  { value: "bug", label: "แอปมีปัญหา / ใช้งานไม่ได้" },
-  { value: "content", label: "ข้อมูลไม่ถูกต้อง" },
-  { value: "other", label: "อื่นๆ" },
+  { value: "bug", labelKey: "appDetail.reportTypeBug" },
+  { value: "content", labelKey: "appDetail.reportTypeContent" },
+  { value: "other", labelKey: "appDetail.reportTypeOther" },
 ];
 
 function ReportProblem({ app, session, open, setOpen }) {
@@ -354,27 +360,28 @@ function ReportProblem({ app, session, open, setOpen }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const { t } = useTranslation();
 
   if (!session) {
     return (
       <p className="report-toggle-row">
-        พบปัญหากับแอปนี้? —{" "}
+        {t("appDetail.reportPrompt")}{" "}
         <button type="button" className="link-button" onClick={() => signIn("github")}>
-          เข้าสู่ระบบเพื่อรายงานปัญหา
+          {t("appDetail.loginToReport")}
         </button>
       </p>
     );
   }
 
   if (done) {
-    return <p className="report-toggle-row">✓ ส่งรายงานปัญหาเรียบร้อย ขอบคุณที่แจ้งให้ทราบ</p>;
+    return <p className="report-toggle-row">{t("appDetail.reportDone")}</p>;
   }
 
   if (!open) {
     return (
       <p className="report-toggle-row">
         <button type="button" className="link-button" onClick={() => setOpen(true)}>
-          รายงานปัญหาของแอปนี้
+          {t("appDetail.reportOpenCta")}
         </button>
       </p>
     );
@@ -383,7 +390,7 @@ function ReportProblem({ app, session, open, setOpen }) {
   function submit(e) {
     e.preventDefault();
     if (message.trim().length < 3) {
-      setError("กรอกรายละเอียดปัญหาอย่างน้อย 3 ตัวอักษร");
+      setError(t("appDetail.reportMinLength"));
       return;
     }
     setSubmitting(true);
@@ -397,26 +404,26 @@ function ReportProblem({ app, session, open, setOpen }) {
   return (
     <form className="review-form" onSubmit={submit}>
       <label className="form-field">
-        <span className="form-field__label">ประเภทปัญหา</span>
+        <span className="form-field__label">{t("appDetail.reportTypeLabel")}</span>
         <select value={type} onChange={(e) => setType(e.target.value)}>
-          {REPORT_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
+          {REPORT_TYPES.map((rt) => (
+            <option key={rt.value} value={rt.value}>
+              {t(rt.labelKey)}
             </option>
           ))}
         </select>
       </label>
       <label className="form-field">
-        <span className="form-field__label">รายละเอียด</span>
+        <span className="form-field__label">{t("appDetail.reportDetailLabel")}</span>
         <textarea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
       </label>
       {error && <span className="field-error">{error}</span>}
       <div className="form-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? "กำลังส่ง..." : "ส่งรายงาน"}
+          {submitting ? t("appDetail.sending") : t("appDetail.sendReport")}
         </button>
         <button type="button" className="btn-secondary" onClick={() => setOpen(false)} disabled={submitting}>
-          ยกเลิก
+          {t("common.cancel")}
         </button>
       </div>
     </form>
