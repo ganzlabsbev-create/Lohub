@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Layout from "../../components/Layout";
 import StateMessage from "../../components/StateMessage";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 import { getSiteSettings } from "../../lib/site";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
@@ -15,27 +17,29 @@ const DEFAULT_NOTIFS = { app_updates: true, dev_request_result: true };
 // เคยพาไป /account เฉยๆ ทั้งที่ชื่อไม่ตรงปลายทาง
 // - บัญชีที่เชื่อมต่อ: อ่านจาก session ตรงๆ ไม่ต้องเรียก API เพิ่ม
 // - การแจ้งเตือน: ยังไม่มี backend รองรับ เก็บลง localStorage ไปก่อนตามที่ระบุไว้ ค่อยต่อ API ทีหลัง
+// - ภาษา: เพิ่มใหม่ — ใช้ LanguageSwitcher ตัวเดียวกับใน SideDrawer (ระบบ 2 ภาษา th/en)
 // - ธีม: โปรเจกต์นี้ยังไม่มีระบบธีม (มีแค่ prefers-color-scheme อัตโนมัติ) จึงข้ามไปก่อน ไม่เพิ่ม dependency ใหม่
 // - Danger zone: ปุ่ม signOut() ตรงๆ จุดเดียวในแอป (ยกเว้นปุ่มเล็กใน SideDrawer ที่คงไว้เหมือนเดิม)
 export default function SettingsPage({ site }) {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
 
   return (
     <Layout site={site}>
       <section className="section dev-narrow">
         <div className="section__head">
-          <h1>ตั้งค่า</h1>
+          <h1>{t("accountSettings.title")}</h1>
         </div>
 
         {status === "loading" && (
-          <StateMessage kind="loading">กำลังตรวจสอบสถานะเข้าสู่ระบบ...</StateMessage>
+          <StateMessage kind="loading">{t("accountSettings.checkingLogin")}</StateMessage>
         )}
 
         {status !== "loading" && !session && (
           <StateMessage kind="empty">
-            เข้าสู่ระบบเพื่อจัดการการตั้งค่า —{" "}
+            {t("accountSettings.loginPrompt")}{" "}
             <button type="button" className="link-button" onClick={() => signIn("github")}>
-              เข้าสู่ระบบด้วย GitHub
+              {t("common.loginWithGithub")}
             </button>
           </StateMessage>
         )}
@@ -51,24 +55,23 @@ function SettingsPanel({ session }) {
     <>
       <ConnectedAccountSection session={session} />
       <NotificationsSection />
+      <LanguageSection />
       <DangerZoneSection />
     </>
   );
 }
 
 function ConnectedAccountSection({ session }) {
+  const { t } = useTranslation();
   return (
     <section className="section">
       <div className="section__head">
-        <h2>บัญชีที่เชื่อมต่อ</h2>
+        <h2>{t("accountSettings.connectedAccountTitle")}</h2>
       </div>
       <div className="dev-row">
         <div className="dev-row__body">
           <p className="dev-row__name">◈ GitHub — @{session.user?.login}</p>
-          <p className="dev-row__meta">
-            นี่คือวิธีเข้าสู่ระบบเดียวของ Lohub — ยังไม่รองรับการเชื่อมต่อบัญชีอื่นเพิ่ม จึงไม่มีปุ่ม
-            ยกเลิกการเชื่อมต่อ
-          </p>
+          <p className="dev-row__meta">{t("accountSettings.connectedAccountNote")}</p>
         </div>
       </div>
     </section>
@@ -77,6 +80,7 @@ function ConnectedAccountSection({ session }) {
 
 function NotificationsSection() {
   const [prefs, setPrefs] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     try {
@@ -104,18 +108,18 @@ function NotificationsSection() {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>การแจ้งเตือน</h2>
-        <p className="section__hint">บันทึกไว้ในเบราว์เซอร์นี้ก่อน — ยังไม่เชื่อมระบบแจ้งเตือนจริง</p>
+        <h2>{t("accountSettings.notificationsTitle")}</h2>
+        <p className="section__hint">{t("accountSettings.notificationsHint")}</p>
       </div>
       <ToggleRow
-        label="แอปที่ติดตามอัปเดต"
-        description="แจ้งเตือนเมื่อแอปที่คุณติดตามมีเวอร์ชันใหม่"
+        label={t("accountSettings.notifAppUpdatesLabel")}
+        description={t("accountSettings.notifAppUpdatesDesc")}
         checked={prefs.app_updates}
         onChange={() => toggle("app_updates")}
       />
       <ToggleRow
-        label="ผลคำขอเป็น Developer"
-        description="แจ้งเตือนเมื่อแอดมินอนุมัติหรือปฏิเสธคำขอของคุณ"
+        label={t("accountSettings.notifDevRequestLabel")}
+        description={t("accountSettings.notifDevRequestDesc")}
         checked={prefs.dev_request_result}
         onChange={() => toggle("dev_request_result")}
       />
@@ -143,15 +147,29 @@ function ToggleRow({ label, description, checked, onChange }) {
   );
 }
 
-function DangerZoneSection() {
+function LanguageSection() {
+  const { t } = useTranslation();
   return (
     <section className="section">
       <div className="section__head">
-        <h2>โซนอันตราย</h2>
+        <h2>{t("accountSettings.languageSection")}</h2>
+        <p className="section__hint">{t("accountSettings.languageBody")}</p>
+      </div>
+      <LanguageSwitcher />
+    </section>
+  );
+}
+
+function DangerZoneSection() {
+  const { t } = useTranslation();
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h2>{t("accountSettings.dangerZone")}</h2>
       </div>
       <div className="form-actions">
         <button type="button" className="btn-primary" onClick={() => signOut()}>
-          ออกจากระบบ
+          {t("accountSettings.logout")}
         </button>
       </div>
     </section>

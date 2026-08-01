@@ -8,12 +8,11 @@ import { getSiteSettings } from "../../lib/site";
 import { apiGet, apiPost } from "../../lib/apiClient";
 import { formatDate } from "../../lib/format";
 import { useSearchIndex } from "../../lib/useSearchIndex";
+import { useTranslation } from "../../lib/i18n";
 
 export async function getStaticProps() {
   return { props: { site: getSiteSettings() } };
 }
-
-const ROLE_LABEL = { member: "สมาชิก", developer: "นักพัฒนา", admin: "แอดมิน" };
 
 // หน้าโปรไฟล์ผู้ใช้ที่ login แล้ว ใช้ร่วมกันทุก role (member/developer/admin)
 // role/ข้อมูลจริงเชื่อจาก GET /api/profile เป็นหลัก ไม่คำนวณ role เองซ้ำฝั่ง client
@@ -21,23 +20,24 @@ const ROLE_LABEL = { member: "สมาชิก", developer: "นักพั�
 // (แหล่งข้อมูลเดิมที่ทุกหน้าสาธารณะใช้อยู่แล้ว) — ไม่ได้เพิ่มการเรียก backend ใหม่
 export default function AccountPage({ site }) {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
 
   return (
     <Layout site={site}>
       <section className="section dev-narrow">
         <div className="section__head">
-          <h1>บัญชีของฉัน</h1>
+          <h1>{t("account.title")}</h1>
         </div>
 
         {status === "loading" && (
-          <StateMessage kind="loading">กำลังตรวจสอบสถานะเข้าสู่ระบบ...</StateMessage>
+          <StateMessage kind="loading">{t("account.checkingLogin")}</StateMessage>
         )}
 
         {status !== "loading" && !session && (
           <StateMessage kind="empty">
-            เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ —{" "}
+            {t("account.loginPrompt")}{" "}
             <button type="button" className="link-button" onClick={() => signIn("github")}>
-              เข้าสู่ระบบด้วย GitHub
+              {t("common.loginWithGithub")}
             </button>
           </StateMessage>
         )}
@@ -51,6 +51,7 @@ export default function AccountPage({ site }) {
 function ProfilePanel() {
   const [state, setState] = useState({ loading: true, error: null, profile: null });
   const { data: searchIndex } = useSearchIndex();
+  const { t } = useTranslation();
 
   function load() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -65,8 +66,8 @@ function ProfilePanel() {
 
   const { loading, error, profile } = state;
 
-  if (loading) return <StateMessage kind="loading">กำลังโหลดโปรไฟล์...</StateMessage>;
-  if (error) return <StateMessage kind="error">โหลดโปรไฟล์ไม่สำเร็จ: {error}</StateMessage>;
+  if (loading) return <StateMessage kind="loading">{t("account.loadingProfile")}</StateMessage>;
+  if (error) return <StateMessage kind="error">{t("account.loadProfileError", { error })}</StateMessage>;
   if (!profile) return null;
 
   const { username, role, profile: memberRow } = profile;
@@ -86,9 +87,9 @@ function ProfilePanel() {
   const isDeveloper = role === "developer" || !!developerRecord;
 
   const statusLabels = [];
-  if (isAdmin) statusLabels.push(ROLE_LABEL.admin);
-  if (isDeveloper) statusLabels.push(ROLE_LABEL.developer);
-  if (!statusLabels.length) statusLabels.push(ROLE_LABEL.member);
+  if (isAdmin) statusLabels.push(t("account.roleAdmin"));
+  if (isDeveloper) statusLabels.push(t("account.roleDeveloper"));
+  if (!statusLabels.length) statusLabels.push(t("account.roleMember"));
 
   return (
     <>
@@ -105,21 +106,21 @@ function ProfilePanel() {
           <p className="account-name">
             {displayName}
             {verified && (
-              <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">
+              <span className="stamp stamp--inline" title={t("common.verified")}>
                 ✓ verified
               </span>
             )}
           </p>
           <p className="account-role mono">
             @{username} · {statusLabels.join(" · ")}
-            {joinedAt ? ` · เข้าร่วมเมื่อ ${formatDate(joinedAt)}` : ""}
+            {joinedAt ? t("account.joinedOnShort", { date: formatDate(joinedAt) }) : ""}
           </p>
         </div>
         <Link
           href="/account/settings"
           className="icon-btn"
-          aria-label="ตั้งค่า"
-          title="ตั้งค่า"
+          aria-label={t("account.settings")}
+          title={t("account.settings")}
           style={{ marginLeft: "auto" }}
         >
           ⚙️
@@ -140,9 +141,10 @@ function ProfilePanel() {
 // (ไฟล์เดียวกับที่หน้า /developer/{id} ใช้อยู่แล้ว จึงข้อมูลตรงกันเป๊ะ ไม่ต้องมี backend ใหม่)
 function DeveloperProfileSummary({ username }) {
   const { loading, error, data } = useSearchIndex();
+  const { t } = useTranslation();
 
-  if (loading) return <StateMessage kind="loading">กำลังโหลดโปรไฟล์นักพัฒนา...</StateMessage>;
-  if (error) return <StateMessage kind="error">โหลดข้อมูลนักพัฒนาไม่สำเร็จ: {error}</StateMessage>;
+  if (loading) return <StateMessage kind="loading">{t("account.loadingDevProfile")}</StateMessage>;
+  if (error) return <StateMessage kind="error">{t("account.loadDevProfileError", { error })}</StateMessage>;
 
   const developer = data?.developers.find(
     (d) => (d.github_username || "").toLowerCase() === username.toLowerCase()
@@ -151,9 +153,9 @@ function DeveloperProfileSummary({ username }) {
   if (!developer) {
     return (
       <p className="banner-note">
-        บัญชีนี้เป็นนักพัฒนาแล้ว แต่ยังไม่พบโปรไฟล์นักพัฒนาในระบบ (อาจกำลังรอ build รอบถัดไปหลังอนุมัติ) —
-        ลองรีเฟรชอีกครั้งภายหลัง หรือไปที่ <Link href="/dev/dashboard">Dashboard นักพัฒนา</Link>{" "}
-        เพื่อจัดการแอปของคุณ
+        {t("account.devSummaryNotFound")}{" "}
+        <Link href="/dev/dashboard">{t("account.devDashboard")}</Link>{" "}
+        {t("account.devSummaryNotFoundSuffix")}
       </p>
     );
   }
@@ -163,7 +165,7 @@ function DeveloperProfileSummary({ username }) {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>โปรไฟล์นักพัฒนาของคุณ</h2>
+        <h2>{t("account.devSummaryTitle")}</h2>
       </div>
 
       <div className="dev-head" style={{ marginBottom: 16 }}>
@@ -172,16 +174,16 @@ function DeveloperProfileSummary({ username }) {
           <p className="account-name" style={{ margin: 0 }}>
             {developer.name}
             {developer.verified && (
-              <span className="stamp stamp--inline" title="ยืนยันตัวตนแล้ว">
+              <span className="stamp stamp--inline" title={t("common.verified")}>
                 ✓ verified
               </span>
             )}
           </p>
           <div className="dev-head__links">
-            <Link href={`/developer/${developer.id}`}>👤 ดูหน้าโปรไฟล์สาธารณะ</Link>
+            <Link href={`/developer/${developer.id}`}>{t("account.viewPublicProfile")}</Link>
             {developer.website && (
               <a href={developer.website} target="_blank" rel="noopener noreferrer">
-                🔗 เว็บไซต์
+                {t("account.website")}
               </a>
             )}
             <a
@@ -197,26 +199,27 @@ function DeveloperProfileSummary({ username }) {
 
       <div className="meta-grid">
         <div>
-          <span>สถานะบัญชี</span>
-          <strong>{developer.status === "suspended" ? "ถูกระงับ" : "ใช้งานได้ปกติ"}</strong>
+          <span>{t("account.accountStatusLabel")}</span>
+          <strong>{developer.status === "suspended" ? t("statusBadge.suspended") : t("statusBadge.active")}</strong>
         </div>
         <div>
-          <span>เข้าร่วมเมื่อ</span>
+          <span>{t("account.joinedLabel")}</span>
           <strong>{formatDate(developer.joined_at)}</strong>
         </div>
         <div>
-          <span>จำนวนแอป</span>
-          <strong>{apps.length} แอป</strong>
+          <span>{t("account.appCountLabel")}</span>
+          <strong>{t("account.appCountValue", { count: apps.length })}</strong>
         </div>
         <div>
-          <span>ช่องทางติดต่อ</span>
+          <span>{t("account.contactLabel")}</span>
           <strong>{developer.contact || "-"}</strong>
         </div>
       </div>
 
       <p className="banner-note" style={{ marginTop: 16 }}>
-        ไปที่ <Link href="/dev/dashboard">Dashboard นักพัฒนา</Link> เพื่ออัปเดตแอปที่มีอยู่ หรือ{" "}
-        <Link href="/dev/submit">ส่งแอปใหม่</Link> เข้าคิวตรวจได้เลย
+        {t("account.goToDashboardPrefix")} <Link href="/dev/dashboard">{t("account.devDashboard")}</Link>{" "}
+        {t("account.goToDashboardMid")}{" "}
+        <Link href="/dev/submit">{t("account.submitApp")}</Link> {t("account.goToDashboardSuffix")}
       </p>
     </section>
   );
@@ -225,14 +228,15 @@ function DeveloperProfileSummary({ username }) {
 // ย่อจากลิงก์แอดมินยาวๆ ทุกหน้าย่อย เหลือปุ่มเดียวไปหน้า /admin — เมนูย่อยแอดมิน
 // (คิว/นักพัฒนา/หมวดหมู่/รายงาน/รีวิว/สมาชิก) ให้ไปอยู่ในหน้า /admin เอง ไม่ต้องแปะซ้ำไว้ที่ Account
 function AdminQuickLinks() {
+  const { t } = useTranslation();
   return (
     <section className="section">
       <div className="section__head">
-        <h2>แอดมิน</h2>
+        <h2>{t("account.adminLinksTitle")}</h2>
       </div>
       <div className="form-actions">
         <Link href="/admin" className="btn-primary">
-          🛠 ไปที่ Admin Panel
+          {t("account.goToAdminPanel")}
         </Link>
       </div>
     </section>
@@ -252,6 +256,7 @@ function DeveloperRequestPanel() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const { t } = useTranslation();
 
   function loadRequest() {
     setState((s) => ({ ...s, loading: true, error: null }));
@@ -276,26 +281,26 @@ function DeveloperRequestPanel() {
       .finally(() => setSubmitting(false));
   }
 
-  if (loading) return <StateMessage kind="loading">กำลังโหลดสถานะคำขอ...</StateMessage>;
-  if (error) return <StateMessage kind="error">โหลดสถานะไม่สำเร็จ: {error}</StateMessage>;
+  if (loading) return <StateMessage kind="loading">{t("account.loadingRequestStatus")}</StateMessage>;
+  if (error) return <StateMessage kind="error">{t("account.loadRequestError", { error })}</StateMessage>;
 
   if (request && request.status === "pending") {
     return (
       <section className="section">
         <div className="section__head">
-          <h2>คำขอเป็น Developer ของคุณ</h2>
+          <h2>{t("account.devRequestTitle")}</h2>
         </div>
         <p className="banner-note">
-          อยู่ระหว่างรอตรวจ — ส่งเมื่อ {formatDate(request.created_at)}
+          {t("account.devRequestPending", { date: formatDate(request.created_at) })}
         </p>
         {request.reason && (
           <p className="dev-row__text">
-            <strong>เหตุผล:</strong> {request.reason}
+            <strong>{t("account.reasonLabel")}</strong> {request.reason}
           </p>
         )}
         {request.portfolio_url && (
           <p className="dev-row__text">
-            <strong>ผลงาน:</strong>{" "}
+            <strong>{t("account.portfolioLabel")}</strong>{" "}
             <a href={request.portfolio_url} target="_blank" rel="noreferrer">
               {request.portfolio_url}
             </a>
@@ -303,12 +308,12 @@ function DeveloperRequestPanel() {
         )}
         {request.website && (
           <p className="dev-row__text">
-            <strong>เว็บไซต์:</strong> {request.website}
+            <strong>{t("account.websiteLabel")}</strong> {request.website}
           </p>
         )}
         {request.contact && (
           <p className="dev-row__text">
-            <strong>ช่องทางติดต่อ:</strong> {request.contact}
+            <strong>{t("account.contactLabelColon")}</strong> {request.contact}
           </p>
         )}
       </section>
@@ -318,28 +323,27 @@ function DeveloperRequestPanel() {
   return (
     <section className="section">
       <div className="section__head">
-        <h2>สมัครเป็น Developer</h2>
+        <h2>{t("account.requestFormTitle")}</h2>
       </div>
-      <p className="dev-row__text">
-        อยากลงแอปของคุณเองในเว็บนี้? สมัครอัพเกรดเป็น Developer — คำขอจะไปรอแอดมินตรวจและอนุมัติ
-      </p>
+      <p className="dev-row__text">{t("account.requestPitch")}</p>
       <p className="dev-row__text" style={{ fontSize: "0.85rem" }}>
-        มีโปรไฟล์นักพัฒนาอยู่แล้วในระบบ (บัญชี GitHub อื่น)?{" "}
+        {t("account.hasProfilePrompt")}{" "}
         <button type="button" className="link-button" onClick={() => signIn("github")}>
-          เข้าสู่ระบบนักพัฒนา
+          {t("account.loginAsDev")}
         </button>
       </p>
 
       {request?.status === "rejected" && (
         <p className="banner-note">
-          คำขอก่อนหน้าถูกปฏิเสธ{request.admin_note ? ` — เหตุผล: ${request.admin_note}` : ""} —
-          แก้ไขแล้วส่งคำขอใหม่ได้ด้านล่าง
+          {t("account.requestRejected")}
+          {request.admin_note ? t("account.requestRejectedReason", { note: request.admin_note }) : ""}{" "}
+          {t("account.requestRejectedSuffix")}
         </p>
       )}
 
       <form onSubmit={submit}>
         <label className="form-field">
-          <span className="form-field__label">เหตุผลที่อยากเป็น Developer</span>
+          <span className="form-field__label">{t("account.reasonFieldLabel")}</span>
           <textarea
             rows={3}
             value={form.reason}
@@ -348,7 +352,7 @@ function DeveloperRequestPanel() {
           />
         </label>
         <label className="form-field">
-          <span className="form-field__label">ลิงก์ผลงาน (portfolio)</span>
+          <span className="form-field__label">{t("account.portfolioFieldLabel")}</span>
           <input
             type="url"
             value={form.portfolio_url}
@@ -357,16 +361,16 @@ function DeveloperRequestPanel() {
           />
         </label>
         <label className="form-field">
-          <span className="form-field__label">ชื่อที่อยากให้แสดงบนโปรไฟล์นักพัฒนา (ไม่บังคับ)</span>
+          <span className="form-field__label">{t("account.displayNameFieldLabel")}</span>
           <input
             type="text"
             value={form.display_name}
             onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
-            placeholder="เว้นว่างไว้ = ใช้ชื่อจาก GitHub"
+            placeholder={t("account.displayNamePlaceholder")}
           />
         </label>
         <label className="form-field">
-          <span className="form-field__label">เว็บไซต์ (ไม่บังคับ)</span>
+          <span className="form-field__label">{t("account.websiteFieldLabel")}</span>
           <input
             type="url"
             value={form.website}
@@ -375,7 +379,7 @@ function DeveloperRequestPanel() {
           />
         </label>
         <label className="form-field">
-          <span className="form-field__label">ช่องทางติดต่อ เช่นอีเมล (ไม่บังคับ)</span>
+          <span className="form-field__label">{t("account.contactFieldLabel")}</span>
           <input
             type="text"
             value={form.contact}
@@ -383,12 +387,12 @@ function DeveloperRequestPanel() {
           />
         </label>
         <p className="dev-row__text" style={{ fontSize: "0.8rem" }}>
-          ถ้าอนุมัติ ระบบจะเอาข้อมูลเหล่านี้ (หรือดึงจากโปรไฟล์ GitHub ถ้าเว้นว่าง) ไปสร้างโปรไฟล์นักพัฒนาให้อัตโนมัติ
+          {t("account.autoNote")}
         </p>
         {submitError && <span className="field-error">{submitError}</span>}
         <div className="form-actions">
           <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? "กำลังส่ง..." : "ส่งคำขอ"}
+            {submitting ? t("account.sending") : t("account.submitRequest")}
           </button>
         </div>
       </form>
